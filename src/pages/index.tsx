@@ -354,30 +354,40 @@ const ActivityCard = ({
   onDelete?: () => void;
   dragHandleProps?: any;
 }) => {
-  // Card color logic
-  let bg = "bg-white";
-  let border = "border-slate-200";
-  let text = "text-slate-800";
-  let accent = activity.color || COLOR_PALETTE.primary;
-  let ring = "";
-  if (state === "inprogress") {
-    bg = "bg-primary/10";
-    border = "border-primary";
-    ring = "animate-pulse";
-  } else if (state === "completed") {
-    bg = "bg-green-100";
-    border = "border-green-400";
-    text = "text-green-700";
-  }
+  const accent = activity.color || COLOR_PALETTE.primary;
+
+  // Glassmorphism styling based on state
+  const cardStyles = {
+    planned: {
+      bg: "bg-white/70 backdrop-blur-xl",
+      border: "border-slate-200/50",
+      shadow: "shadow-sm hover:shadow-md",
+      text: "text-slate-800",
+    },
+    inprogress: {
+      bg: "bg-electric-50/80 backdrop-blur-xl",
+      border: "border-electric-400/60",
+      shadow: "shadow-lg shadow-electric-500/20",
+      text: "text-slate-900",
+    },
+    completed: {
+      bg: "bg-gradient-to-r from-green-50/90 to-emerald-50/90 backdrop-blur-xl",
+      border: "border-green-400/50",
+      shadow: "shadow-md shadow-green-500/10",
+      text: "text-green-800",
+    },
+  };
+
+  const currentStyle = cardStyles[state];
 
   return (
     <motion.div
       className={cn(
-        "flex flex-row items-center w-full rounded-2xl border px-3 py-3 mb-2 transition-all duration-200 group",
-        bg,
-        border,
-        ring,
-        "shadow-none"
+        "flex flex-row items-center w-full rounded-2xl border px-4 py-4 mb-3 transition-all duration-300 group relative overflow-hidden",
+        currentStyle.bg,
+        currentStyle.border,
+        currentStyle.shadow,
+        "hover:-translate-y-0.5"
       )}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
@@ -386,18 +396,30 @@ const ActivityCard = ({
       tabIndex={0}
       aria-label={`Activity: ${activity.name}`}
       onDoubleClick={onEdit}
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
       onContextMenu={e => {
         e.preventDefault();
         if (onEdit) onEdit();
       }}
     >
+      {/* Gradient accent bar on left */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
+        style={{
+          background: `linear-gradient(to bottom, ${accent}, ${accent}aa)`,
+          boxShadow: state === "inprogress" ? `0 0 12px ${accent}60` : "none",
+        }}
+        aria-hidden="true"
+      />
+
       {/* Left: Checkbox */}
       <button
         className={cn(
-          "w-8 h-8 flex items-center justify-center rounded-full border-2 mr-3 transition-all duration-200",
+          "w-9 h-9 flex items-center justify-center rounded-full border-2 ml-2 mr-4 transition-all duration-300",
           state === "completed"
-            ? "border-green-500 bg-green-500 text-white"
-            : "border-slate-300 bg-white text-slate-400 hover:border-primary focus:ring-2 focus:ring-primary"
+            ? "border-green-500 bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-lg shadow-green-500/30"
+            : "border-slate-300 bg-white/80 text-slate-400 hover:border-electric-500 hover:bg-electric-50 focus:ring-2 focus:ring-electric-400"
         )}
         aria-label={state === "completed" ? "Mark as incomplete" : "Mark as complete"}
         onClick={onCheck}
@@ -405,10 +427,10 @@ const ActivityCard = ({
       >
         {state === "completed" ? (
           <motion.span
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.2 }}
-            className="text-lg"
+            initial={{ scale: 0.5, rotate: -45, opacity: 0 }}
+            animate={{ scale: 1, rotate: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 15 }}
+            className="text-lg font-bold"
           >
             ✓
           </motion.span>
@@ -416,49 +438,75 @@ const ActivityCard = ({
           <span className="text-lg"> </span>
         )}
       </button>
-      {/* Center: Name, duration, category, progress bar */}
+
+      {/* Center: Name, duration, category */}
       <div className="flex-1 flex flex-col min-w-0" onClick={onEdit} style={{ cursor: "pointer" }}>
-        <span className={cn("text-base font-semibold truncate", text)}>{activity.name}</span>
-        <span className="text-xs text-slate-500 mt-0.5">
-          {activity.startTime ? formatTime(activity.startTime) + ' • ' : ''}{activity.duration} min &middot; {activity.category}
+        <span className={cn("text-lg font-sans font-semibold truncate", currentStyle.text)}>
+          {activity.name}
         </span>
-        {/* Progress bar (placeholder for now) */}
-        <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2">
-          <div
-            className="h-1.5 rounded-full"
-            style={{
-              width: state === "completed" ? "100%" : state === "inprogress" ? "50%" : "0%",
-              background: accent,
-              transition: "width 0.3s",
-            }}
-          />
+        <div className="flex items-center gap-2 mt-1">
+          <span className="font-display text-sm text-electric-600 font-semibold">
+            {activity.duration}
+          </span>
+          <span className="font-sans text-xs text-slate-500">min</span>
+          <span className="text-slate-300">•</span>
+          <span className="font-sans text-xs text-slate-600 bg-white/60 px-2 py-0.5 rounded-full">
+            {activity.category}
+          </span>
+          {activity.startTime && (
+            <>
+              <span className="text-slate-300">•</span>
+              <span className="font-sans text-xs text-slate-600">
+                {formatTime(activity.startTime)}
+              </span>
+            </>
+          )}
         </div>
+        {/* Progress bar */}
+        {state !== "planned" && (
+          <div className="w-full h-1 bg-slate-200/50 rounded-full mt-2 overflow-hidden">
+            <motion.div
+              className="h-1 rounded-full"
+              style={{
+                background: state === "completed"
+                  ? "linear-gradient(to right, #22c55e, #10b981)"
+                  : `linear-gradient(to right, ${accent}, ${accent}cc)`,
+              }}
+              initial={{ width: 0 }}
+              animate={{
+                width: state === "completed" ? "100%" : state === "inprogress" ? "50%" : "0%",
+              }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
+          </div>
+        )}
       </div>
-      {/* Right: Emoji, accent bar, timer icon, drag handle, delete */}
-      <div className="flex flex-col items-center ml-3 space-y-1">
-        <span className="text-2xl" aria-label="Activity icon">{activity.icon}</span>
-        <div
-          className="w-1 h-8 rounded-full"
-          style={{ background: accent }}
-          aria-hidden="true"
-        />
-        <span className="text-xs text-slate-400" aria-label="Start timer">⏱️</span>
-        <button
-          className="mt-1 text-xs text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-          aria-label="Delete activity"
-          onClick={onDelete}
-          tabIndex={0}
-        >
-          🗑️
-        </button>
-        <button
-          {...dragHandleProps}
-          className="mt-1 text-xs text-slate-400 cursor-grab active:cursor-grabbing"
-          aria-label="Reorder activity"
-          tabIndex={0}
-        >
-          <span className="text-lg">☰</span>
-        </button>
+
+      {/* Right: Emoji, actions */}
+      <div className="flex flex-row items-center ml-4 gap-2">
+        <span className="text-3xl" aria-label="Activity icon">{activity.icon}</span>
+
+        <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button
+            className="text-base text-coral-500 hover:scale-110 transition-transform"
+            aria-label="Delete activity"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete?.();
+            }}
+            tabIndex={0}
+          >
+            🗑️
+          </button>
+          <button
+            {...dragHandleProps}
+            className="text-base text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing hover:scale-110 transition-all"
+            aria-label="Reorder activity"
+            tabIndex={0}
+          >
+            ☰
+          </button>
+        </div>
       </div>
     </motion.div>
   );
@@ -1528,11 +1576,15 @@ export default function FocusFlow() {
           </>
         ) : (
           // --- Main Dashboard ---
-          <main className="w-full max-w-xl mx-auto flex-1 flex flex-col items-center px-2 pb-2">
+          <main className="w-full max-w-2xl mx-auto flex-1 flex flex-col items-center px-4 pb-2 relative">
+            {/* Background atmosphere */}
+            <div className="fixed inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 -z-10" aria-hidden="true" />
+            <div className="fixed inset-0 bg-mesh-gradient opacity-20 -z-10" aria-hidden="true" />
+
             {/* Top Bar */}
-            <div className="w-full flex flex-row items-center justify-between mt-4 mb-2">
+            <div className="w-full flex flex-row items-center justify-between mt-4 mb-4">
               <div className="flex flex-row items-center">
-                <Avatar className="w-10 h-10 mr-2 border-2 border-slate-200">
+                <Avatar className="w-12 h-12 mr-3 border-2 border-white shadow-md">
                   <AvatarFallback
                     className={cn(
                       "flex h-full w-full items-center justify-center rounded-full select-none",
@@ -1545,16 +1597,19 @@ export default function FocusFlow() {
                         "bg-[#10B981] text-white": currentProfile.type === "mom",
                       }
                     )}
+                    style={{
+                      boxShadow: `0 0 20px ${COLOR_PALETTE[currentProfile.type as keyof typeof COLOR_PALETTE] || COLOR_PALETTE.primary}40`
+                    }}
                     aria-label="Profile avatar"
                   >
                     {currentProfile.avatar}
                   </AvatarFallback>
                 </Avatar>
-                <span className="font-semibold text-slate-800 text-base truncate max-w-[120px]">{currentProfile.name}</span>
+                <span className="font-sans font-semibold text-slate-900 text-base truncate max-w-[140px]">{currentProfile.name}</span>
               </div>
               <div className="flex-1 flex flex-col items-center">
-                <span className="text-xs text-slate-400">{getTodayDate()}</span>
-                <span className="text-sm text-slate-600">{getDayOfWeek(getTodayDate())}</span>
+                <span className="font-display text-sm font-semibold text-slate-800">{getTodayDate()}</span>
+                <span className="font-sans text-xs text-slate-500 uppercase tracking-wide">{getDayOfWeek(getTodayDate())}</span>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -1592,62 +1647,80 @@ export default function FocusFlow() {
               </DropdownMenu>
             </div>
             {/* Progress Ring */}
-            <div className="w-full flex flex-col items-center mt-2 mb-2">
-              <ProgressRing
-                size={160}
-                animate
-                ariaLabel="Today's Progress"
-                layers={[
-                  {
-                    // Main completion ring
-                    value: Math.max(0, Math.min(getCompletionRate(currentProfile) / 100, 1)),
-                    color:
-                      getCompletionRate(currentProfile) < 30
-                        ? COLOR_PALETTE.warning
-                        : getCompletionRate(currentProfile) < 70
-                        ? COLOR_PALETTE.accent
-                        : COLOR_PALETTE.success,
-                    strokeWidth: 14,
-                    pulse: getCompletionRate(currentProfile) === 100, // pulse on perfect day
-                    zIndex: 2,
-                  },
-                  {
-                    // Streak ring (thin, secondary color)
-                    value: 1,
-                    color: COLOR_PALETTE[currentProfile.type as keyof typeof COLOR_PALETTE] || COLOR_PALETTE.primary,
-                    strokeWidth: 4,
-                    dashed: true,
-                    zIndex: 1,
-                  },
-                  ...(getCompletionRate(currentProfile) === 100
-                    ? [
-                        {
-                          // Perfect day marker (outer ring, pulsing)
-                          value: 1,
-                          color: "#FFD700",
-                          strokeWidth: 2,
-                          pulse: true,
-                          zIndex: 3,
-                        },
-                      ]
-                    : []),
-                ]}
-              >
-                <span className="text-3xl font-extrabold text-slate-800">
-                  {getCompletionRate(currentProfile)}%
-                </span>
-                <span className="text-xs text-amber-600 font-medium flex items-center mt-1" aria-label="Current streak">
-                  🔥 {getCurrentStreak(currentProfile)}d
-                </span>
-                <span className="text-sm text-slate-500 mt-1">
-                  {getCompletionRate(currentProfile) < 30
-                    ? "Let's get started!"
-                    : getCompletionRate(currentProfile) < 70
-                    ? "Keep going!"
-                    : "Amazing focus!"}
-                </span>
-              </ProgressRing>
-            </div>
+            <motion.div
+              className="w-full flex flex-col items-center mt-4 mb-6 relative"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              {/* Radial glow background */}
+              <div className="absolute inset-0 flex items-center justify-center -z-10" aria-hidden="true">
+                <div
+                  className="w-64 h-64 rounded-full blur-3xl opacity-30"
+                  style={{
+                    background: `radial-gradient(circle, ${COLOR_PALETTE[currentProfile.type as keyof typeof COLOR_PALETTE] || COLOR_PALETTE.primary}40 0%, transparent 70%)`
+                  }}
+                />
+              </div>
+
+              {/* Glass card container */}
+              <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50">
+                <ProgressRing
+                  size={180}
+                  animate
+                  ariaLabel="Today's Progress"
+                  layers={[
+                    {
+                      // Main completion ring with gradient
+                      value: Math.max(0, Math.min(getCompletionRate(currentProfile) / 100, 1)),
+                      color:
+                        getCompletionRate(currentProfile) < 30
+                          ? COLOR_PALETTE.warning
+                          : getCompletionRate(currentProfile) < 70
+                          ? COLOR_PALETTE.accent
+                          : COLOR_PALETTE.success,
+                      strokeWidth: 16,
+                      pulse: getCompletionRate(currentProfile) === 100,
+                      zIndex: 2,
+                    },
+                    {
+                      // Streak ring (thin, secondary color)
+                      value: 1,
+                      color: COLOR_PALETTE[currentProfile.type as keyof typeof COLOR_PALETTE] || COLOR_PALETTE.primary,
+                      strokeWidth: 4,
+                      dashed: true,
+                      zIndex: 1,
+                    },
+                    ...(getCompletionRate(currentProfile) === 100
+                      ? [
+                          {
+                            // Perfect day marker (outer ring, pulsing)
+                            value: 1,
+                            color: "#FFD700",
+                            strokeWidth: 3,
+                            pulse: true,
+                            zIndex: 3,
+                          },
+                        ]
+                      : []),
+                  ]}
+                >
+                  <span className="text-5xl font-display font-bold text-slate-900">
+                    {getCompletionRate(currentProfile)}%
+                  </span>
+                  <span className="text-sm font-sans text-coral-500 font-semibold flex items-center mt-2" aria-label="Current streak">
+                    🔥 <span className="font-display ml-1 text-base">{getCurrentStreak(currentProfile)}</span>d
+                  </span>
+                  <span className="text-sm font-sans bg-gradient-to-r from-electric-600 to-coral-500 bg-clip-text text-transparent font-medium mt-2">
+                    {getCompletionRate(currentProfile) < 30
+                      ? "Let's get started!"
+                      : getCompletionRate(currentProfile) < 70
+                      ? "Keep going!"
+                      : "Amazing focus!"}
+                  </span>
+                </ProgressRing>
+              </div>
+            </motion.div>
             {/* Weekly Overview */}
             <div className="w-full flex flex-col items-center mt-2 mb-4">
               <WeeklyOverview dailyRecords={currentProfile.dailyRecords || {}} />
@@ -1679,25 +1752,30 @@ export default function FocusFlow() {
               />
             </div>
             {/* Today's Focus Section */}
-            <div className="w-full flex flex-row items-center justify-between mt-2 mb-2 px-2">
+            <motion.div
+              className="w-full flex flex-row items-center justify-between mt-6 mb-4 px-2 bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-sm"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
               <div className="flex flex-col items-start">
-                <span className="text-xs text-slate-400">{getTodayDate()}</span>
-                <span className="text-base font-semibold text-slate-700">{getDayOfWeek(getTodayDate())}</span>
+                <span className="font-sans text-xs text-slate-500 uppercase tracking-wide">Date</span>
+                <span className="font-display text-base font-bold text-slate-800">{getTodayDate()}</span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-xs text-amber-600">🔥 Streak</span>
-                <span className="text-lg font-bold text-amber-600">{getCurrentStreak(currentProfile)}d</span>
+                <span className="font-sans text-xs text-coral-500 uppercase tracking-wide">🔥 Streak</span>
+                <span className="font-display text-2xl font-bold text-coral-500">{getCurrentStreak(currentProfile)}<span className="text-sm">d</span></span>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-xs text-green-600">Completed</span>
-                <span className="text-lg font-bold text-green-600">
-                  {getCompletionRate(currentProfile)}%
+                <span className="font-sans text-xs text-electric-600 uppercase tracking-wide">Progress</span>
+                <span className="font-display text-2xl font-bold text-electric-600">
+                  {getCompletionRate(currentProfile)}<span className="text-sm">%</span>
                 </span>
               </div>
-            </div>
+            </motion.div>
             {/* Activity Cards with Drag and Drop */}
-            <div className="w-full flex flex-col mt-2 mb-2 px-1 relative">
-              <h3 className="text-lg font-semibold text-slate-800 mb-2">Today's Activities</h3>
+            <div className="w-full flex flex-col mt-4 mb-24 px-1 relative">
+              <h3 className="text-2xl font-display font-bold text-slate-900 mb-4 px-2">Today's Activities</h3>
               <DragDropContext onDragEnd={handleReorderActivities}>
                 <Droppable droppableId="activities">
                   {(provided) => (
@@ -1748,43 +1826,47 @@ export default function FocusFlow() {
                 </Droppable>
               </DragDropContext>
               {/* Add Activity Floating Button */}
-              <Button
-                className="fixed bottom-20 right-6 z-20 rounded-full w-14 h-14 bg-primary text-white text-3xl flex items-center justify-center shadow-lg"
-                style={{ boxShadow: "0 4px 16px rgba(59,130,246,0.10)" }}
-                aria-label="Add Activity"
-                onClick={handleAddActivity}
-              >
-                +
-              </Button>
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  className="fixed bottom-24 right-6 z-20 rounded-full w-16 h-16 bg-gradient-to-br from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white text-4xl flex items-center justify-center shadow-2xl transition-all duration-300 border-2 border-white/50"
+                  style={{
+                    boxShadow: "0 8px 24px rgba(6,182,212,0.35), 0 0 0 0 rgba(6,182,212,0.5)",
+                  }}
+                  aria-label="Add Activity"
+                  onClick={handleAddActivity}
+                >
+                  +
+                </Button>
+              </motion.div>
             </div>
-            {/* Bottom Navigation */}
-            <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-slate-100 flex flex-row items-center justify-around py-2 z-10">
+            {/* Bottom Navigation - Frosted Glass */}
+            <nav className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-2xl border-t border-white/50 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] flex flex-row items-center justify-around py-3 z-30">
               <Button
                 variant="ghost"
-                className="flex flex-col items-center px-2 py-1 text-accent"
+                className="flex flex-col items-center px-4 py-2 text-electric-600 hover:bg-electric-50/80 rounded-2xl transition-all duration-200 group"
                 aria-label="Analytics"
                 onClick={() => setShowAnalytics(true)}
               >
-                <span className="text-xl">📊</span>
-                <span className="text-xs">Analytics</span>
+                <span className="text-2xl group-hover:scale-110 transition-transform">📊</span>
+                <span className="font-sans text-xs font-medium mt-1 uppercase tracking-wide">Analytics</span>
               </Button>
               <Button
                 variant="ghost"
-                className="flex flex-col items-center px-2 py-1 text-green-500"
+                className="flex flex-col items-center px-4 py-2 text-coral-500 hover:bg-coral-50/80 rounded-2xl transition-all duration-200 group"
                 aria-label="Share"
                 onClick={() => setShowShare(true)}
               >
-                <span className="text-xl">📤</span>
-                <span className="text-xs">Share</span>
+                <span className="text-2xl group-hover:scale-110 transition-transform">📤</span>
+                <span className="font-sans text-xs font-medium mt-1 uppercase tracking-wide">Share</span>
               </Button>
               <Button
                 variant="ghost"
-                className="flex flex-col items-center px-2 py-1 text-slate-500"
+                className="flex flex-col items-center px-4 py-2 text-ocean-600 hover:bg-ocean-50/80 rounded-2xl transition-all duration-200 group"
                 aria-label="Settings"
                 onClick={() => setShowSettings(true)}
               >
-                <span className="text-xl">⚙️</span>
-                <span className="text-xs">Settings</span>
+                <span className="text-2xl group-hover:scale-110 transition-transform">⚙️</span>
+                <span className="font-sans text-xs font-medium mt-1 uppercase tracking-wide">Settings</span>
               </Button>
             </nav>
 
