@@ -1959,16 +1959,19 @@ export default function FocusFlow() {
         <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
           <DialogContent
             ref={modalRef}
-            className="max-w-lg w-full rounded-2xl p-0 overflow-hidden"
+            className="max-w-lg w-full rounded-3xl p-0 overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900"
             aria-modal="true"
             aria-labelledby="create-profile-title"
             aria-describedby="create-profile-desc"
           >
-            <DialogHeader className="bg-primary/10 px-6 py-4">
-              <DialogTitle id="create-profile-title" className="text-xl font-bold text-primary">
+            {/* Gradient overlay for depth */}
+            <div className="absolute inset-0 bg-mesh-gradient opacity-20 pointer-events-none" aria-hidden="true" />
+
+            <DialogHeader className="relative px-8 pt-8 pb-6">
+              <DialogTitle id="create-profile-title" className="text-3xl font-display font-bold bg-gradient-to-r from-white to-electric-200 bg-clip-text text-transparent">
                 Create New Profile
               </DialogTitle>
-              <DialogDescription id="create-profile-desc" className="text-slate-600">
+              <DialogDescription id="create-profile-desc" className="text-slate-300 font-sans text-base mt-2">
                 Personalize your FocusFlow experience
               </DialogDescription>
             </DialogHeader>
@@ -1977,13 +1980,13 @@ export default function FocusFlow() {
                 e.preventDefault();
                 handleCreateProfile();
               }}
-              className="px-6 py-4"
+              className="relative px-8 pb-8"
               autoComplete="off"
             >
               {/* Name */}
-              <div className="mb-4">
-                <Label htmlFor="profile-name" className="block mb-1 font-medium text-slate-700">
-                  Profile Name <span className="text-red-500">*</span>
+              <div className="mb-6">
+                <Label htmlFor="profile-name" className="block mb-2 font-sans font-semibold text-white">
+                  Profile Name <span className="text-coral-400">*</span>
                 </Label>
                 <Input
                   id="profile-name"
@@ -1994,46 +1997,41 @@ export default function FocusFlow() {
                   value={createForm.name}
                   onChange={e => setCreateForm(f => ({ ...f, name: e.target.value.slice(0, 20) }))}
                   placeholder="e.g. Sarah's Mom Life"
-                  className="w-full"
+                  className="w-full bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-slate-400 rounded-xl px-4 py-3 focus:ring-2 focus:ring-electric-500 focus:border-electric-500"
                   aria-required="true"
                   aria-label="Profile name"
                 />
-                <span className="text-xs text-slate-400 mt-1">{createForm.name.length}/20</span>
+                <span className="text-xs text-slate-400 mt-1 font-sans">{createForm.name.length}/20</span>
               </div>
+
               {/* Avatar Picker */}
-              <div className="mb-4">
-                <Label className="block mb-1 font-medium text-slate-700">Avatar Emoji</Label>
-                <div className="flex flex-row items-center space-x-2">
-                  <Button
-                    type="button"
-                    className="w-12 h-12 text-2xl bg-white border border-slate-200 rounded-full shadow-none"
-                    aria-label="Current avatar"
-                  >
+              <div className="mb-6">
+                <Label className="block mb-2 font-sans font-semibold text-white">Avatar Emoji</Label>
+                <div className="flex flex-row items-center space-x-3">
+                  <div className="w-16 h-16 text-4xl bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl flex items-center justify-center shadow-lg">
                     {createForm.avatar}
-                  </Button>
+                  </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         type="button"
-                        className="text-xs px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg shadow-none"
+                        className="text-sm px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl shadow-none hover:bg-white/20 text-white font-sans"
                         aria-label="Pick emoji"
                       >
                         Pick Emoji
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="max-h-64 overflow-y-auto p-2">
+                    <DropdownMenuContent className="max-h-64 overflow-y-auto p-3 bg-slate-800/95 backdrop-blur-xl border-white/20">
                       <ScrollArea className="h-48 w-64">
                         {EMOJI_CATEGORIES.map(cat => (
-                          <div key={cat.name} className="mb-2">
-                            <div className="text-xs text-slate-400 mb-1">{cat.name}</div>
-                            <div className="flex flex-wrap gap-1">
+                          <div key={cat.name} className="mb-3">
+                            <div className="text-xs text-slate-400 mb-1.5 font-sans uppercase tracking-wide">{cat.name}</div>
+                            <div className="flex flex-wrap gap-1.5">
                               {cat.emojis.map(emoji => (
                                 <button
                                   key={emoji}
                                   type="button"
-                                  className={cn(
-                                    "w-8 h-8 text-lg rounded-full flex items-center justify-center hover:bg-primary/10 focus:bg-primary/20 focus:outline-none"
-                                  )}
+                                  className="w-9 h-9 text-xl rounded-xl flex items-center justify-center hover:bg-electric-500/20 focus:bg-electric-500/30 focus:outline-none transition-colors"
                                   onClick={() => setCreateForm(f => ({ ...f, avatar: emoji }))}
                                   aria-label={`Pick emoji ${emoji}`}
                                 >
@@ -2048,44 +2046,58 @@ export default function FocusFlow() {
                   </DropdownMenu>
                 </div>
               </div>
+
               {/* Type Picker */}
-              <div className="mb-4">
-                <Label className="block mb-1 font-medium text-slate-700">Profile Type</Label>
-                <div className="grid grid-cols-2 gap-2">
+              <div className="mb-6">
+                <Label className="block mb-3 font-sans font-semibold text-white">Profile Type</Label>
+                <div className="grid grid-cols-2 gap-3">
                   {PROFILE_TYPES.map(type => (
-                    <button
+                    <motion.button
                       key={type.key}
                       type="button"
                       className={cn(
-                        "flex flex-row items-center px-3 py-2 rounded-lg border transition-all duration-150",
+                        "relative flex flex-col items-start px-4 py-4 rounded-2xl border-2 transition-all duration-300 overflow-hidden group",
                         createForm.type === type.key
-                          ? "border-primary bg-primary/10"
-                          : "border-slate-200 bg-white hover:bg-slate-50"
+                          ? "border-electric-500 bg-electric-500/20 shadow-lg shadow-electric-500/30"
+                          : "border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30"
                       )}
                       onClick={() => setCreateForm(f => ({ ...f, type: type.key as ProfileType }))}
                       aria-label={`Select ${type.label} profile`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <span className="text-xl mr-2">{type.emoji}</span>
-                      <span className="flex flex-col items-start">
-                        <span className="text-sm font-semibold">{type.label}</span>
-                        <span className="text-xs text-slate-500">{type.desc}</span>
-                      </span>
-                    </button>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-2xl">{type.emoji}</span>
+                        <span className="font-display font-bold text-white text-base">{type.label}</span>
+                      </div>
+                      <span className="text-xs text-slate-300 font-sans">{type.desc}</span>
+                      {createForm.type === type.key && (
+                        <motion.div
+                          className="absolute top-2 right-2"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        >
+                          <span className="text-electric-400 text-lg">✓</span>
+                        </motion.div>
+                      )}
+                    </motion.button>
                   ))}
                 </div>
               </div>
-              <DialogFooter className="mt-6 flex flex-row justify-end space-x-2">
+
+              <DialogFooter className="mt-8 flex flex-row justify-end gap-3">
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => setShowCreateModal(false)}
-                  className="rounded-lg"
+                  className="rounded-xl px-6 py-2 text-white hover:bg-white/10 font-sans"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-primary text-white rounded-lg px-6"
+                  className="bg-gradient-to-r from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white rounded-xl px-8 py-2 font-sans font-semibold shadow-lg shadow-electric-500/30"
                   disabled={!createForm.name.trim() || createForm.name.length > 20}
                   aria-disabled={!createForm.name.trim() || createForm.name.length > 20}
                 >
