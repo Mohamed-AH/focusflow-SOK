@@ -355,6 +355,16 @@ const ActivityCard = ({
   dragHandleProps?: any;
 }) => {
   const accent = activity.color || COLOR_PALETTE.primary;
+  const [showCelebration, setShowCelebration] = React.useState(false);
+
+  // Trigger celebration when state changes to completed
+  React.useEffect(() => {
+    if (state === "completed") {
+      setShowCelebration(true);
+      const timer = setTimeout(() => setShowCelebration(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [state]);
 
   // Glassmorphism styling based on state
   const cardStyles = {
@@ -412,6 +422,37 @@ const ActivityCard = ({
         }}
         aria-hidden="true"
       />
+
+      {/* Celebration particles */}
+      <AnimatePresence>
+        {showCelebration && (
+          <>
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-2 h-2 rounded-full"
+                style={{
+                  background: i % 2 === 0 ? "#22d3ee" : "#ff6b6b",
+                  left: "50%",
+                  top: "50%",
+                }}
+                initial={{ scale: 0, x: 0, y: 0, opacity: 1 }}
+                animate={{
+                  scale: [0, 1, 0.5],
+                  x: Math.cos((i * Math.PI) / 4) * 60,
+                  y: Math.sin((i * Math.PI) / 4) * 60,
+                  opacity: [1, 1, 0],
+                }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  duration: 0.6,
+                  ease: "easeOut",
+                }}
+              />
+            ))}
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Left: Checkbox */}
       <button
@@ -1582,7 +1623,12 @@ export default function FocusFlow() {
             <div className="fixed inset-0 bg-mesh-gradient opacity-20 -z-10" aria-hidden="true" />
 
             {/* Top Bar */}
-            <div className="w-full flex flex-row items-center justify-between mt-4 mb-4">
+            <motion.div
+              className="w-full flex flex-row items-center justify-between mt-4 mb-4"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
               <div className="flex flex-row items-center">
                 <Avatar className="w-12 h-12 mr-3 border-2 border-white shadow-md">
                   <AvatarFallback
@@ -1645,7 +1691,7 @@ export default function FocusFlow() {
                   </button>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
+            </motion.div>
             {/* Progress Ring */}
             <motion.div
               className="w-full flex flex-col items-center mt-4 mb-6 relative"
@@ -1722,11 +1768,21 @@ export default function FocusFlow() {
               </div>
             </motion.div>
             {/* Weekly Overview */}
-            <div className="w-full flex flex-col items-center mt-2 mb-4">
+            <motion.div
+              className="w-full flex flex-col items-center mt-2 mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
               <WeeklyOverview dailyRecords={currentProfile.dailyRecords || {}} />
-            </div>
+            </motion.div>
             {/* Monthly Heatmap */}
-            <div className="w-full flex flex-col items-center mt-2 mb-4">
+            <motion.div
+              className="w-full flex flex-col items-center mt-2 mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
               <MonthlyHeatmap
                 dailyRecords={
                   // Map dailyRecords to MonthlyHeatmap's expected shape for current month
@@ -1750,13 +1806,13 @@ export default function FocusFlow() {
                 month={new Date().getUTCMonth()}
                 year={new Date().getUTCFullYear()}
               />
-            </div>
+            </motion.div>
             {/* Today's Focus Section */}
             <motion.div
               className="w-full flex flex-row items-center justify-between mt-6 mb-4 px-2 bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-sm"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
             >
               <div className="flex flex-col items-start">
                 <span className="font-sans text-xs text-slate-500 uppercase tracking-wide">Date</span>
@@ -1774,8 +1830,20 @@ export default function FocusFlow() {
               </div>
             </motion.div>
             {/* Activity Cards with Drag and Drop */}
-            <div className="w-full flex flex-col mt-4 mb-24 px-1 relative">
-              <h3 className="text-2xl font-display font-bold text-slate-900 mb-4 px-2">Today's Activities</h3>
+            <motion.div
+              className="w-full flex flex-col mt-4 mb-24 px-1 relative"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.6 }}
+            >
+              <motion.h3
+                className="text-2xl font-display font-bold text-slate-900 mb-4 px-2"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.7 }}
+              >
+                Today's Activities
+              </motion.h3>
               <DragDropContext onDragEnd={handleReorderActivities}>
                 <Droppable droppableId="activities">
                   {(provided) => (
@@ -1836,7 +1904,7 @@ export default function FocusFlow() {
               >
                 +
               </Button>
-            </div>
+            </motion.div>
             {/* Bottom Navigation - Frosted Glass */}
             <nav className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-2xl border-t border-white/50 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] flex flex-row items-center justify-around py-3 z-30">
               <Button
