@@ -25,11 +25,11 @@ function getFirstDayOfWeek(year: number, month: number) {
 }
 
 function getColor(completion: number | null) {
-  if (completion === null) return "bg-muted";
+  if (completion === null) return "bg-white/10";
   if (completion >= 80) return "bg-green-500";
   if (completion >= 50) return "bg-yellow-400";
   if (completion > 0) return "bg-red-400";
-  return "bg-muted";
+  return "bg-white/10";
 }
 
 function getTodayISO() {
@@ -89,9 +89,9 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg font-semibold">Monthly Progress</h3>
+        <h3 className="text-lg font-display font-bold text-white">Monthly Progress</h3>
         {/* Month/Year label */}
-        <span className="text-muted-foreground text-sm">
+        <span className="text-slate-300 text-sm font-sans">
           {new Date(Date.UTC(year, month)).toLocaleString(undefined, {
             month: "long",
             year: "numeric",
@@ -99,12 +99,12 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
           })}
         </span>
       </div>
-      <div className="grid grid-cols-7 gap-1 bg-card p-2 rounded-lg shadow-sm">
+      <div className="grid grid-cols-7 gap-1 bg-white/10 backdrop-blur-sm p-2 rounded-lg shadow-sm border border-white/20">
         {/* Weekday headers */}
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d, idx) => (
           <div
             key={`weekday-${idx}`}
-            className="text-xs text-muted-foreground text-center font-medium pb-1"
+            className="text-xs text-slate-300 text-center font-medium pb-1"
           >
             {d[0]}
           </div>
@@ -114,9 +114,9 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
           cell.date ? (
             <button
               key={cell.date}
-              className={`aspect-square w-8 rounded-md flex flex-col items-center justify-center transition-all
-                ${cell.isFuture ? "bg-muted" : getColor(cell.completion)}
-                ${cell.date === todayISO ? "ring-2 ring-primary" : ""}
+              className={`aspect-square w-8 rounded-md flex flex-col items-center justify-center transition-all text-white
+                ${cell.isFuture ? "bg-white/5" : getColor(cell.completion)}
+                ${cell.date === todayISO ? "ring-2 ring-electric-500" : ""}
                 hover:brightness-110 focus:outline-none`}
               title={
                 cell.completion !== null
@@ -125,7 +125,7 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
               }
               // TODO: onClick: open modal with day details
             >
-              <span className="text-[10px] font-medium leading-none">
+              <span className="text-[10px] font-medium leading-none font-display">
                 {new Date(cell.date).getUTCDate()}
               </span>
               <span className="text-xs">
@@ -137,7 +137,7 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
           )
         )}
       </div>
-      <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+      <div className="mt-2 flex justify-between text-xs text-slate-300 font-sans">
         <span>Low</span>
         <span>High</span>
       </div>
