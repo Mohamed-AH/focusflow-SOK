@@ -313,8 +313,8 @@ ${getRangeLabel()}
       </div>
 
       {/* Tabs Navigation */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <div className="border-b bg-card px-3 md:px-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <div className="border-b bg-card px-3 md:px-6 flex-shrink-0">
           <TabsList className="bg-transparent border-b-0 w-full justify-start">
             <TabsTrigger
               value="overview"
@@ -344,24 +344,26 @@ ${getRangeLabel()}
         </div>
 
         {/* Tab Content - Scrollable */}
-        <ScrollArea className="flex-1">
-          <div className="p-3 md:p-6">
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="mt-0">
-              <OverviewTab profile={profile} days={getDaysFromRange()} />
-            </TabsContent>
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full w-full">
+            <div className="p-3 md:p-6">
+              {/* Overview Tab */}
+              <TabsContent value="overview" className="mt-0">
+                <OverviewTab profile={profile} days={getDaysFromRange()} />
+              </TabsContent>
 
-            {/* Activities Tab */}
-            <TabsContent value="activities" className="mt-0">
-              <ActivitiesTab profile={profile} days={getDaysFromRange()} />
-            </TabsContent>
+              {/* Activities Tab */}
+              <TabsContent value="activities" className="mt-0">
+                <ActivitiesTab profile={profile} days={getDaysFromRange()} />
+              </TabsContent>
 
-            {/* Trends Tab */}
-            <TabsContent value="trends" className="mt-0">
-              <TrendsTab profile={profile} days={getDaysFromRange()} />
-            </TabsContent>
-          </div>
-        </ScrollArea>
+              {/* Trends Tab */}
+              <TabsContent value="trends" className="mt-0">
+                <TrendsTab profile={profile} days={getDaysFromRange()} />
+              </TabsContent>
+            </div>
+          </ScrollArea>
+        </div>
       </Tabs>
     </div>
   );
