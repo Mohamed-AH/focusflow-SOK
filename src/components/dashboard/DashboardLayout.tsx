@@ -7,7 +7,6 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/components/ui/use-toast';
 import {
   BarChart3,
@@ -222,9 +221,9 @@ ${getRangeLabel()}
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-background">
+    <div className="w-full h-full flex flex-col bg-background relative">
       {/* Header */}
-      <div className="border-b bg-card">
+      <div className="border-b bg-card flex-shrink-0">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between px-3 md:px-6 py-3 md:py-4 gap-3">
           <div className="flex-shrink-0">
             <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
@@ -312,8 +311,9 @@ ${getRangeLabel()}
         )}
       </div>
 
-      {/* Tabs Navigation */}
+      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        {/* Tab Navigation */}
         <div className="border-b bg-card px-3 md:px-6 flex-shrink-0">
           <TabsList className="bg-transparent border-b-0 w-full justify-start">
             <TabsTrigger
@@ -343,38 +343,31 @@ ${getRangeLabel()}
           </TabsList>
         </div>
 
-        {/* Overview Tab */}
-        <TabsContent
-          value="overview"
-          className="flex-1 mt-0 overflow-y-auto overflow-x-hidden data-[state=active]:flex data-[state=active]:flex-col"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          <div className="p-3 md:p-6">
-            <OverviewTab profile={profile} days={getDaysFromRange()} />
-          </div>
-        </TabsContent>
+        {/* Tab Content Area - Scrollable */}
+        <div className="flex-1 min-h-0 relative">
+          <div className="absolute inset-0 overflow-hidden">
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="h-full mt-0 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="p-3 md:p-6">
+                <OverviewTab profile={profile} days={getDaysFromRange()} />
+              </div>
+            </TabsContent>
 
-        {/* Activities Tab */}
-        <TabsContent
-          value="activities"
-          className="flex-1 mt-0 overflow-y-auto overflow-x-hidden data-[state=active]:flex data-[state=active]:flex-col"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          <div className="p-3 md:p-6">
-            <ActivitiesTab profile={profile} days={getDaysFromRange()} />
-          </div>
-        </TabsContent>
+            {/* Activities Tab */}
+            <TabsContent value="activities" className="h-full mt-0 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="p-3 md:p-6">
+                <ActivitiesTab profile={profile} days={getDaysFromRange()} />
+              </div>
+            </TabsContent>
 
-        {/* Trends Tab */}
-        <TabsContent
-          value="trends"
-          className="flex-1 mt-0 overflow-y-auto overflow-x-hidden data-[state=active]:flex data-[state=active]:flex-col"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          <div className="p-3 md:p-6">
-            <TrendsTab profile={profile} days={getDaysFromRange()} />
+            {/* Trends Tab */}
+            <TabsContent value="trends" className="h-full mt-0 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="p-3 md:p-6">
+                <TrendsTab profile={profile} days={getDaysFromRange()} />
+              </div>
+            </TabsContent>
           </div>
-        </TabsContent>
+        </div>
       </Tabs>
     </div>
   );
