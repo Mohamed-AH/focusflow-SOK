@@ -6,6 +6,10 @@ const config = {
   darkMode: ["selector", 'class'],
   theme: {
   	extend: {
+  		fontFamily: {
+  			display: ['"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+  			sans: ['Manrope', 'system-ui', 'sans-serif'],
+  		},
   		colors: {
   			primary: {
   				'100': '#e6f5e6',
@@ -30,6 +34,44 @@ const config = {
   				'700': '#404040',
   				'800': '#262626',
   				'900': '#171717'
+  			},
+  			// Custom landing page palette - deep ocean theme
+  			ocean: {
+  				'50': '#f0f9ff',
+  				'100': '#e0f2fe',
+  				'200': '#b9e6fe',
+  				'300': '#7cd4fd',
+  				'400': '#36bffa',
+  				'500': '#0ba5e9',
+  				'600': '#0086c9',
+  				'700': '#026aa2',
+  				'800': '#065986',
+  				'900': '#0a4a6f',
+  				'950': '#0a0e27',
+  			},
+  			coral: {
+  				'50': '#fff1f1',
+  				'100': '#ffe1e1',
+  				'200': '#ffc7c7',
+  				'300': '#ffa0a0',
+  				'400': '#ff6b6b',
+  				'500': '#f83b3b',
+  				'600': '#e51d1d',
+  				'700': '#c11414',
+  				'800': '#a01414',
+  				'900': '#841818',
+  			},
+  			electric: {
+  				'50': '#ecfeff',
+  				'100': '#cffafe',
+  				'200': '#a5f3fc',
+  				'300': '#67e8f9',
+  				'400': '#22d3ee',
+  				'500': '#06b6d4',
+  				'600': '#0891b2',
+  				'700': '#0e7490',
+  				'800': '#155e75',
+  				'900': '#164e63',
   			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -79,7 +121,11 @@ const config = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		backgroundImage: {
+  			'mesh-gradient': 'radial-gradient(at 27% 37%, hsla(215, 98%, 61%, 0.15) 0px, transparent 50%), radial-gradient(at 97% 21%, hsla(125, 98%, 72%, 0.12) 0px, transparent 50%), radial-gradient(at 52% 99%, hsla(354, 98%, 61%, 0.15) 0px, transparent 50%), radial-gradient(at 10% 29%, hsla(256, 96%, 67%, 0.12) 0px, transparent 50%), radial-gradient(at 97% 96%, hsla(38, 60%, 74%, 0.1) 0px, transparent 50%), radial-gradient(at 33% 50%, hsla(222, 67%, 73%, 0.13) 0px, transparent 50%), radial-gradient(at 79% 53%, hsla(343, 68%, 79%, 0.11) 0px, transparent 50%)',
+  			'ocean-mesh': 'radial-gradient(at 0% 0%, #0a0e27 0px, transparent 50%), radial-gradient(at 50% 0%, #1a1f3a 0px, transparent 50%), radial-gradient(at 100% 0%, #0a0e27 0px, transparent 50%)',
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate")],
