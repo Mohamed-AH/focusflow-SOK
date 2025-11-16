@@ -2218,12 +2218,13 @@ export default function FocusFlow() {
 
         {/* Add/Edit Activity Modal */}
         <Dialog open={showActivityModal} onOpenChange={setShowActivityModal}>
-          <DialogContent className="max-w-lg w-full rounded-2xl p-0 overflow-hidden">
-            <DialogHeader className="bg-primary/10 px-6 py-4">
-              <DialogTitle className="text-xl font-bold text-primary">
+          <DialogContent className="max-w-lg w-full rounded-3xl p-0 overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900">
+            <div className="absolute inset-0 bg-mesh-gradient opacity-20 pointer-events-none" />
+            <DialogHeader className="relative px-6 py-5 border-b border-white/10">
+              <DialogTitle className="text-3xl font-display font-bold bg-gradient-to-r from-white to-electric-200 bg-clip-text text-transparent">
                 {activityEditId ? "Edit Activity" : "Add Activity"}
               </DialogTitle>
-              <DialogDescription className="text-slate-600">
+              <DialogDescription className="text-slate-300 font-sans mt-1">
                 {activityEditId
                   ? "Update your activity details"
                   : "Add a new custom activity to your day"}
@@ -2231,13 +2232,17 @@ export default function FocusFlow() {
             </DialogHeader>
             <form
               onSubmit={handleSaveActivity}
-              className="px-6 py-4"
+              className="relative px-6 py-5 space-y-5"
               autoComplete="off"
             >
               {/* Name */}
-              <div className="mb-4">
-                <Label htmlFor="activity-name" className="block mb-1 font-medium text-slate-700">
-                  Activity Name <span className="text-red-500">*</span>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Label htmlFor="activity-name" className="block mb-2 font-sans font-medium text-white">
+                  Activity Name <span className="text-coral-400">*</span>
                 </Label>
                 <Input
                   id="activity-name"
@@ -2247,16 +2252,21 @@ export default function FocusFlow() {
                   value={activityForm?.name || ""}
                   onChange={e => setActivityForm((f: any) => ({ ...f, name: e.target.value.slice(0, 50) }))}
                   placeholder="e.g. Yoga, Deep Work, Family Time"
-                  className="w-full"
+                  className="w-full bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-electric-400 rounded-xl px-4 py-3 font-sans backdrop-blur-xl"
                   aria-required="true"
                   aria-label="Activity name"
                 />
-                <span className="text-xs text-slate-400 mt-1">{activityForm?.name?.length || 0}/50</span>
-              </div>
+                <span className="text-xs text-slate-400 mt-1.5 block font-sans">{activityForm?.name?.length || 0}/50</span>
+              </motion.div>
               {/* Duration and Time */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <motion.div
+                className="grid grid-cols-2 gap-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+              >
                 <div>
-                  <Label htmlFor="activity-duration" className="block mb-1 font-medium text-slate-700">
+                  <Label htmlFor="activity-duration" className="block mb-2 font-sans font-medium text-white">
                     Duration (minutes)
                   </Label>
                   <Input
@@ -2269,14 +2279,14 @@ export default function FocusFlow() {
                     required
                     value={activityForm?.duration || 15}
                     onChange={e => setActivityForm((f: any) => ({ ...f, duration: Math.max(15, Math.min(480, Number(e.target.value))) }))}
-                    className="w-full"
+                    className="w-full bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-electric-400 rounded-xl px-4 py-3 font-display font-bold backdrop-blur-xl"
                     aria-required="true"
                     aria-label="Activity duration"
                   />
-                  <span className="text-xs text-slate-400 mt-1">15 min to 8 hours</span>
+                  <span className="text-xs text-slate-400 mt-1.5 block font-sans">15 min to 8 hours</span>
                 </div>
                 <div>
-                  <Label htmlFor="activity-time" className="block mb-1 font-medium text-slate-700">
+                  <Label htmlFor="activity-time" className="block mb-2 font-sans font-medium text-white">
                     Start Time
                   </Label>
                   <TimePickerInput
@@ -2284,15 +2294,19 @@ export default function FocusFlow() {
                     name="activity-time"
                     value={activityForm?.startTime}
                     onChange={(time) => setActivityForm((f: any) => ({ ...f, startTime: time }))}
-                    className="w-full"
+                    className="w-full bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-electric-400 rounded-xl px-4 py-3 font-display font-bold backdrop-blur-xl"
                     aria-label="Activity start time"
                   />
-                  <span className="text-xs text-slate-400 mt-1">Optional</span>
+                  <span className="text-xs text-slate-400 mt-1.5 block font-sans">Optional</span>
                 </div>
-              </div>
+              </motion.div>
               {/* Category */}
-              <div className="mb-4">
-                <Label htmlFor="activity-category" className="block mb-1 font-medium text-slate-700">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Label htmlFor="activity-category" className="block mb-2 font-sans font-medium text-white">
                   Category
                 </Label>
                 <select
@@ -2301,74 +2315,84 @@ export default function FocusFlow() {
                   required
                   value={activityForm?.category || ""}
                   onChange={e => setActivityForm((f: any) => ({ ...f, category: e.target.value }))}
-                  className="w-full border border-slate-200 rounded-lg px-2 py-2"
+                  className="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 font-sans backdrop-blur-xl focus:bg-white/15 focus:border-electric-400 focus:outline-none"
                   aria-required="true"
                   aria-label="Activity category"
                 >
-                  <option value="" disabled>
+                  <option value="" disabled className="bg-slate-800 text-slate-400">
                     Select category
                   </option>
                   {ACTIVITY_CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>
+                    <option key={cat} value={cat} className="bg-slate-800 text-white">
                       {cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </option>
                   ))}
                 </select>
-              </div>
+              </motion.div>
               {/* Color Picker */}
-              <div className="mb-4">
-                <Label className="block mb-1 font-medium text-slate-700">Color</Label>
-                <div className="flex flex-row items-center space-x-2">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+              >
+                <Label className="block mb-3 font-sans font-medium text-white">Color</Label>
+                <div className="flex flex-row items-center gap-3 flex-wrap">
                   {ACTIVITY_COLORS.map(color => (
-                    <button
+                    <motion.button
                       key={color}
                       type="button"
                       className={cn(
-                        "w-7 h-7 rounded-full border-2 flex items-center justify-center",
+                        "w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-200",
                         activityForm?.color === color
-                          ? "border-primary ring-2 ring-primary"
-                          : "border-slate-200"
+                          ? "border-electric-400 ring-4 ring-electric-400/30 scale-110"
+                          : "border-white/30 hover:border-white/50 hover:scale-105"
                       )}
                       style={{ background: color }}
                       onClick={() => setActivityForm((f: any) => ({ ...f, color }))}
                       aria-label={`Pick color ${color}`}
-                    />
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {activityForm?.color === color && (
+                        <span className="text-white text-lg font-bold">✓</span>
+                      )}
+                    </motion.button>
                   ))}
                 </div>
-              </div>
+              </motion.div>
               {/* Emoji Picker */}
-              <div className="mb-4">
-                <Label className="block mb-1 font-medium text-slate-700">Emoji Icon</Label>
-                <div className="flex flex-row items-center space-x-2">
-                  <Button
-                    type="button"
-                    className="w-12 h-12 text-2xl bg-white border border-slate-200 rounded-full shadow-none"
-                    aria-label="Current activity icon"
-                  >
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <Label className="block mb-3 font-sans font-medium text-white">Emoji Icon</Label>
+                <div className="flex flex-row items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-3xl backdrop-blur-xl">
                     {activityForm?.icon}
-                  </Button>
+                  </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         type="button"
-                        className="text-xs px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg shadow-none"
+                        className="px-5 py-2.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-sans font-medium backdrop-blur-xl transition-all duration-200"
                         aria-label="Pick emoji"
                       >
                         Pick Emoji
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="max-h-64 overflow-y-auto p-2">
-                      <ScrollArea className="h-48 w-64">
+                    <DropdownMenuContent className="max-h-72 overflow-y-auto p-3 bg-slate-900/95 backdrop-blur-xl border-white/20 rounded-2xl">
+                      <ScrollArea className="h-56 w-72">
                         {EMOJI_CATEGORIES.map(cat => (
-                          <div key={cat.name} className="mb-2">
-                            <div className="text-xs text-slate-400 mb-1">{cat.name}</div>
-                            <div className="flex flex-wrap gap-1">
+                          <div key={cat.name} className="mb-3">
+                            <div className="text-xs text-slate-400 mb-2 font-sans font-medium uppercase tracking-wider">{cat.name}</div>
+                            <div className="flex flex-wrap gap-1.5">
                               {cat.emojis.map(emoji => (
                                 <button
                                   key={emoji}
                                   type="button"
                                   className={cn(
-                                    "w-8 h-8 text-lg rounded-full flex items-center justify-center hover:bg-primary/10 focus:bg-primary/20 focus:outline-none"
+                                    "w-10 h-10 text-xl rounded-xl flex items-center justify-center transition-all duration-200 hover:bg-electric-500/20 focus:bg-electric-500/30 focus:outline-none"
                                   )}
                                   onClick={() => setActivityForm((f: any) => ({ ...f, icon: emoji }))}
                                   aria-label={`Pick emoji ${emoji}`}
@@ -2383,19 +2407,19 @@ export default function FocusFlow() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </div>
-              <DialogFooter className="mt-6 flex flex-row justify-end space-x-2">
+              </motion.div>
+              <DialogFooter className="mt-8 flex flex-row justify-end gap-3 pt-5 border-t border-white/10">
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => setShowActivityModal(false)}
-                  className="rounded-lg"
+                  className="rounded-xl px-6 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 font-sans font-medium"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-primary text-white rounded-lg px-6"
+                  className="bg-gradient-to-r from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white rounded-xl px-8 py-2.5 font-sans font-bold shadow-lg shadow-electric-500/30 border-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={!activityForm?.name?.trim() || activityForm?.name?.length > 50}
                   aria-disabled={!activityForm?.name?.trim() || activityForm?.name?.length > 50}
                 >
