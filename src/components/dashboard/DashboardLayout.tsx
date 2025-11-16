@@ -343,25 +343,38 @@ ${getRangeLabel()}
           </TabsList>
         </div>
 
-        {/* Tab Content - Scrollable with native overflow for better mobile support */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {/* Overview Tab */}
+        <TabsContent
+          value="overview"
+          className="flex-1 mt-0 overflow-y-auto overflow-x-hidden data-[state=active]:flex data-[state=active]:flex-col"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           <div className="p-3 md:p-6">
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="mt-0">
-              <OverviewTab profile={profile} days={getDaysFromRange()} />
-            </TabsContent>
-
-            {/* Activities Tab */}
-            <TabsContent value="activities" className="mt-0">
-              <ActivitiesTab profile={profile} days={getDaysFromRange()} />
-            </TabsContent>
-
-            {/* Trends Tab */}
-            <TabsContent value="trends" className="mt-0">
-              <TrendsTab profile={profile} days={getDaysFromRange()} />
-            </TabsContent>
+            <OverviewTab profile={profile} days={getDaysFromRange()} />
           </div>
-        </div>
+        </TabsContent>
+
+        {/* Activities Tab */}
+        <TabsContent
+          value="activities"
+          className="flex-1 mt-0 overflow-y-auto overflow-x-hidden data-[state=active]:flex data-[state=active]:flex-col"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          <div className="p-3 md:p-6">
+            <ActivitiesTab profile={profile} days={getDaysFromRange()} />
+          </div>
+        </TabsContent>
+
+        {/* Trends Tab */}
+        <TabsContent
+          value="trends"
+          className="flex-1 mt-0 overflow-y-auto overflow-x-hidden data-[state=active]:flex data-[state=active]:flex-col"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          <div className="p-3 md:p-6">
+            <TrendsTab profile={profile} days={getDaysFromRange()} />
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   );
@@ -371,12 +384,12 @@ ${getRangeLabel()}
 
 const OverviewTab: React.FC<{ profile: Profile; days: number }> = ({ profile, days }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Key Metrics Cards */}
       <StatsGrid profile={profile} days={days} />
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
         <CompletionTrendChart profile={profile} days={days} />
         <CategoryBreakdown profile={profile} days={days} />
       </div>
@@ -386,12 +399,12 @@ const OverviewTab: React.FC<{ profile: Profile; days: number }> = ({ profile, da
 
 const ActivitiesTab: React.FC<{ profile: Profile; days: number }> = ({ profile, days }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Activity Leaderboard */}
       <ActivityLeaderboard profile={profile} days={days} />
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
         <CategoryPerformance profile={profile} days={days} />
         <TimeOfDayHeatmap profile={profile} days={days} />
       </div>
@@ -401,12 +414,12 @@ const ActivitiesTab: React.FC<{ profile: Profile; days: number }> = ({ profile, 
 
 const TrendsTab: React.FC<{ profile: Profile; days: number }> = ({ profile, days }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Week Comparison */}
       <WeekOverWeekComparison profile={profile} />
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
         <StreakHistory profile={profile} days={days} />
         <PerformanceCalendar profile={profile} days={days} />
       </div>
