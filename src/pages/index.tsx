@@ -1047,156 +1047,484 @@ export default function FocusFlow() {
         {/* If no profile selected, show onboarding */}
         {!currentProfile ? (
           <>
-            {/* Header */}
-            <header className="w-full max-w-2xl mx-auto pt-8 pb-2 px-4 flex flex-col items-center">
-              <motion.img
-                src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
-                alt="FocusFlow background"
-                className="rounded-2xl w-full h-40 object-cover mb-4 shadow-none"
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7 }}
-                aria-hidden="true"
-              />
-              <motion.h1
-                className="text-3xl md:text-4xl font-extrabold text-primary text-center"
-                initial={{ opacity: 0, y: -16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-              >
-                Welcome to FocusFlow
-              </motion.h1>
-              <motion.p
-                className="text-lg text-slate-600 mt-2 text-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-              >
-                Beat the Scroll, Build Focus
-              </motion.p>
-            </header>
-            {/* Profile Selection */}
-            <main className="w-full max-w-2xl mx-auto flex-1 flex flex-col items-center px-4 pb-8">
-              <div className="w-full flex flex-row justify-between items-center mt-6 mb-2">
-                <h2 className="text-xl font-semibold text-slate-800">Your Profiles</h2>
-                <Button
-                  aria-label="Create New Profile"
-                  className="bg-primary text-white rounded-full px-4 py-2 text-base font-medium shadow-none"
-                  onClick={() => setShowCreateModal(true)}
-                >
-                  <span className="mr-2 text-lg">+</span> Create New Profile
-                </Button>
-              </div>
-              <AnimatePresence>
-                {loading ? (
-                  <motion.div
-                    className="w-full flex justify-center items-center py-12"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <span className="text-slate-400 text-lg">Loading...</span>
-                  </motion.div>
-                ) : profiles.length === 0 ? (
-                  <motion.div
-                    className="w-full flex flex-col items-center justify-center py-16"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <img
-                      src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80"
-                      alt="Create your first profile"
-                      className="w-32 h-32 object-cover rounded-full mb-4"
-                      aria-hidden="true"
-                    />
-                    <p className="text-slate-500 text-lg mb-2">Create your first profile to get started</p>
-                    <Button
-                      aria-label="Create New Profile"
-                      className="bg-primary text-white rounded-full px-6 py-2 text-base font-medium shadow-none"
-                      onClick={() => setShowCreateModal(true)}
+            {/* New Landing Page */}
+            <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 font-sans overflow-x-hidden">
+              {/* Hero Section */}
+              <section className="relative w-full min-h-[85vh] md:min-h-screen flex items-center justify-center px-4 py-12 md:py-20 overflow-hidden">
+                {/* Mesh Gradient Background */}
+                <div className="absolute inset-0 bg-mesh-gradient opacity-60" aria-hidden="true" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/80" aria-hidden="true" />
+
+                {/* Floating orbs for depth */}
+                <motion.div
+                  className="absolute top-1/4 left-[10%] w-64 h-64 bg-electric-400/20 rounded-full blur-3xl"
+                  animate={{
+                    y: [0, 30, 0],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  aria-hidden="true"
+                />
+                <motion.div
+                  className="absolute bottom-1/4 right-[15%] w-72 h-72 bg-coral-400/20 rounded-full blur-3xl"
+                  animate={{
+                    y: [0, -40, 0],
+                    scale: [1, 1.15, 1],
+                  }}
+                  transition={{
+                    duration: 10,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 1
+                  }}
+                  aria-hidden="true"
+                />
+
+                <div className="relative z-10 w-full max-w-6xl mx-auto">
+                  <div className="grid md:grid-cols-2 gap-12 items-center">
+                    {/* Left: Hero Content */}
+                    <motion.div
+                      className="space-y-6"
+                      initial={{ opacity: 0, x: -40 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
                     >
-                      <span className="mr-2 text-lg">+</span> Create Profile
-                    </Button>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    className="w-full grid grid-cols-1 sm:grid-cols-2 gap-6 mt-2"
-                    initial="hidden"
-                    animate="visible"
-                    variants={{
-                      hidden: {},
-                      visible: { transition: { staggerChildren: 0.08 } },
-                    }}
-                  >
-                    {profiles.map((profile: any, idx: number) => (
-                      <motion.button
-                        key={profile.id}
-                        className={cn(
-                          "flex flex-row items-center w-full bg-white rounded-2xl border border-slate-200 px-4 py-4 transition-all duration-200",
-                          "hover:scale-[1.025] focus:ring-2 focus:ring-primary focus:outline-none",
-                          currentProfileId === profile.id
-                            ? "ring-2 ring-primary"
-                            : "hover:border-primary/60",
-                          "shadow-none"
-                        )}
-                        style={{
-                          background: currentProfileId === profile.id
-                            ? `linear-gradient(90deg, ${COLOR_PALETTE[profile.type as keyof typeof COLOR_PALETTE] || COLOR_PALETTE.primary}11 0%, #fff 100%)`
-                            : "#fff",
-                        }}
-                        onClick={() => handleProfileSwitch(profile.id)}
-                        initial={{ opacity: 0, y: 24 }}
+                      <motion.div
+                        className="inline-block"
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 24 }}
-                        transition={{ duration: 0.3, delay: idx * 0.05 }}
-                        aria-label={`Select profile ${profile.name}`}
+                        transition={{ delay: 0.2, duration: 0.6 }}
                       >
-                        <Avatar className="w-14 h-14 mr-4 border-2 border-slate-200">
-                          <AvatarFallback
-                            className={cn(
-                              "flex h-full w-full items-center justify-center rounded-full select-none",
-                              "text-4xl leading-none",
-                              // Profile type color background
-                              {
-                                "bg-[#8B5CF6] text-white": profile.type === "student",
-                                "bg-[#3B82F6] text-white": profile.type === "professional" || profile.type === "custom",
-                                "bg-[#F59E0B] text-white": profile.type === "entrepreneur",
-                                "bg-[#EC4899] text-white": profile.type === "creative",
-                                "bg-[#10B981] text-white": profile.type === "mom",
-                              }
-                            )}
-                            aria-label="Profile avatar"
+                        <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/60 backdrop-blur-sm border border-electric-200/50 text-sm font-medium text-ocean-900">
+                          <span className="w-2 h-2 bg-electric-400 rounded-full mr-2 animate-pulse" />
+                          Built for focus, designed for life
+                        </span>
+                      </motion.div>
+
+                      <motion.h1
+                        className="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-slate-900 leading-[1.1]"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.6 }}
+                      >
+                        Track habits.{" "}
+                        <span className="bg-gradient-to-r from-electric-500 to-coral-400 bg-clip-text text-transparent">
+                          Build streaks.
+                        </span>{" "}
+                        Stay focused.
+                      </motion.h1>
+
+                      <motion.p
+                        className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-lg"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4, duration: 0.6 }}
+                      >
+                        A minimal habit tracker with visual progress rings, streak tracking, and analytics—designed for your actual life.
+                      </motion.p>
+
+                      {/* Feature Pills */}
+                      <motion.div
+                        className="flex flex-wrap gap-3 pt-2"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.6 }}
+                      >
+                        {[
+                          { icon: "✓", text: "No account required" },
+                          { icon: "✓", text: "Works offline" },
+                          { icon: "✓", text: "Multiple profiles" },
+                          { icon: "✓", text: "Visual analytics" },
+                        ].map((pill, i) => (
+                          <motion.span
+                            key={i}
+                            className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200/50 text-sm text-slate-700"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.6 + i * 0.1, duration: 0.4 }}
                           >
-                            {profile.avatar}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 flex flex-col items-start">
-                          <span className="text-lg font-semibold text-slate-800">{profile.name}</span>
-                          <span className="text-xs text-slate-500 mt-0.5 flex items-center">
-                            <span className="mr-2" aria-label="Profile type">{PROFILE_TYPES.find(t => t.key === profile.type)?.emoji}</span>
-                            {PROFILE_TYPES.find(t => t.key === profile.type)?.label}
-                          </span>
-                          <div className="flex flex-row items-center mt-2 space-x-3">
-                            <span className="flex items-center text-xs text-amber-600 font-medium" aria-label="Current streak">
-                              🔥 {getCurrentStreak(profile)}d
-                            </span>
-                            <span className="flex items-center text-xs text-green-600 font-medium" aria-label="Completion rate">
-                              ✅ {getCompletionRate(profile)}%
-                            </span>
+                            <span className="text-electric-500 mr-1.5 font-bold">{pill.icon}</span>
+                            {pill.text}
+                          </motion.span>
+                        ))}
+                      </motion.div>
+
+                      <motion.div
+                        className="pt-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8, duration: 0.6 }}
+                      >
+                        <Button
+                          onClick={() => setShowCreateModal(true)}
+                          className="group relative px-8 py-6 bg-gradient-to-r from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white font-semibold text-lg rounded-2xl shadow-lg shadow-electric-500/30 hover:shadow-xl hover:shadow-electric-500/40 transition-all duration-300 border-0"
+                          aria-label="Start tracking your habits"
+                        >
+                          <span className="relative z-10">Start Tracking</span>
+                          <motion.span
+                            className="absolute inset-0 bg-white/20 rounded-2xl"
+                            initial={{ scale: 0, opacity: 0 }}
+                            whileHover={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        </Button>
+                      </motion.div>
+                    </motion.div>
+
+                    {/* Right: Visual Element - Abstract Representation */}
+                    <motion.div
+                      className="hidden md:block relative"
+                      initial={{ opacity: 0, x: 40 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                    >
+                      <div className="relative aspect-square max-w-md mx-auto">
+                        {/* Progress ring visualization */}
+                        <motion.div
+                          className="absolute inset-0 rounded-full bg-gradient-to-br from-electric-100 to-coral-100 blur-2xl opacity-60"
+                          animate={{
+                            scale: [1, 1.05, 1],
+                            rotate: [0, 5, 0],
+                          }}
+                          transition={{
+                            duration: 6,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        />
+                        <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/50">
+                          <div className="aspect-square flex items-center justify-center">
+                            {/* Simulated progress ring */}
+                            <svg className="w-full h-full -rotate-90" viewBox="0 0 200 200">
+                              <circle
+                                cx="100"
+                                cy="100"
+                                r="85"
+                                fill="none"
+                                stroke="#e5e7eb"
+                                strokeWidth="12"
+                              />
+                              <motion.circle
+                                cx="100"
+                                cy="100"
+                                r="85"
+                                fill="none"
+                                stroke="url(#gradient)"
+                                strokeWidth="12"
+                                strokeLinecap="round"
+                                strokeDasharray="534"
+                                initial={{ strokeDashoffset: 534 }}
+                                animate={{ strokeDashoffset: 534 * 0.25 }}
+                                transition={{ duration: 2, ease: "easeOut", delay: 1 }}
+                              />
+                              <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                  <stop offset="0%" stopColor="#22d3ee" />
+                                  <stop offset="100%" stopColor="#ff6b6b" />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                            <motion.div
+                              className="absolute inset-0 flex flex-col items-center justify-center"
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 1.5, duration: 0.6 }}
+                            >
+                              <span className="text-5xl font-display font-bold text-slate-900">75%</span>
+                              <span className="text-sm text-slate-500 mt-1">Daily Progress</span>
+                              <div className="flex items-center gap-2 mt-4">
+                                <span className="text-2xl">🔥</span>
+                                <span className="text-lg font-semibold text-amber-600">12 days</span>
+                              </div>
+                            </motion.div>
                           </div>
                         </div>
-                      </motion.button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              {storageError && (
-                <div className="w-full mt-4 text-red-600 text-sm text-center" role="alert">
-                  {storageError}
+                      </div>
+                    </motion.div>
+                  </div>
                 </div>
-              )}
-            </main>
+              </section>
+
+              {/* Features Section - Bento Box Layout */}
+              <section className="relative w-full px-4 py-16 md:py-24 bg-white">
+                <div className="max-w-6xl mx-auto">
+                  <motion.div
+                    className="text-center mb-12 md:mb-16"
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">
+                      What you actually get
+                    </h2>
+                    <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                      No fluff, no fake promises. Here's what FocusFlow does, period.
+                    </p>
+                  </motion.div>
+
+                  {/* Bento Grid */}
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {/* Feature 1: Progress Tracking */}
+                    <motion.div
+                      className="md:col-span-2 group relative overflow-hidden rounded-3xl bg-gradient-to-br from-electric-50 to-electric-100/50 p-8 md:p-10 border border-electric-200/50 hover:shadow-xl transition-shadow duration-300"
+                      initial={{ opacity: 0, y: 40 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{ duration: 0.6, delay: 0.1 }}
+                    >
+                      <div className="relative z-10">
+                        <div className="w-12 h-12 rounded-2xl bg-electric-500 flex items-center justify-center mb-4">
+                          <span className="text-2xl">📊</span>
+                        </div>
+                        <h3 className="text-2xl md:text-3xl font-display font-bold text-slate-900 mb-3">
+                          Daily progress at a glance
+                        </h3>
+                        <p className="text-slate-700 text-lg mb-4">
+                          See your completion rate in real-time with a visual progress ring. No mental math required.
+                        </p>
+                        <ul className="space-y-2 text-slate-600">
+                          <li className="flex items-start gap-2">
+                            <span className="text-electric-500 mt-1">→</span>
+                            <span>Check off activities as you complete them</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-electric-500 mt-1">→</span>
+                            <span>Watch your progress ring fill throughout the day</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-electric-500 mt-1">→</span>
+                            <span>Weekly and monthly views show completion patterns</span>
+                          </li>
+                        </ul>
+                      </div>
+                      <div className="absolute -right-8 -bottom-8 w-64 h-64 bg-electric-200/30 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-500" aria-hidden="true" />
+                    </motion.div>
+
+                    {/* Feature 2: Streaks */}
+                    <motion.div
+                      className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-coral-50 to-amber-50 p-8 md:p-10 border border-coral-200/50 hover:shadow-xl transition-shadow duration-300"
+                      initial={{ opacity: 0, y: 40 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{ duration: 0.6, delay: 0.2 }}
+                    >
+                      <div className="relative z-10">
+                        <div className="w-12 h-12 rounded-2xl bg-coral-400 flex items-center justify-center mb-4">
+                          <span className="text-2xl">🔥</span>
+                        </div>
+                        <h3 className="text-2xl font-display font-bold text-slate-900 mb-3">
+                          Streaks that motivate
+                        </h3>
+                        <p className="text-slate-700 mb-4">
+                          Build momentum with a streak counter that tracks consistency.
+                        </p>
+                        <div className="space-y-3">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-3xl font-display font-bold text-coral-500">12</span>
+                            <span className="text-slate-600">day streak</span>
+                          </div>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-display font-bold text-amber-500">28</span>
+                            <span className="text-slate-600">best ever</span>
+                          </div>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-display font-bold text-green-500">15</span>
+                            <span className="text-slate-600">perfect days</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="absolute -right-6 -bottom-6 w-48 h-48 bg-coral-200/30 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-500" aria-hidden="true" />
+                    </motion.div>
+
+                    {/* Feature 3: Multiple Profiles */}
+                    <motion.div
+                      className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-50 to-pink-50 p-8 md:p-10 border border-purple-200/50 hover:shadow-xl transition-shadow duration-300"
+                      initial={{ opacity: 0, y: 40 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{ duration: 0.6, delay: 0.3 }}
+                    >
+                      <div className="relative z-10">
+                        <div className="w-12 h-12 rounded-2xl bg-purple-500 flex items-center justify-center mb-4">
+                          <span className="text-2xl">👤</span>
+                        </div>
+                        <h3 className="text-2xl font-display font-bold text-slate-900 mb-3">
+                          Switch between roles
+                        </h3>
+                        <p className="text-slate-700 mb-4">
+                          Because you're not just one thing. Create profiles for different parts of your life.
+                        </p>
+                        <div className="space-y-2 text-sm">
+                          {["👩‍🎓 Student", "💼 Professional", "🚀 Entrepreneur", "🎨 Creative", "👩‍👧‍👦 Parent"].map((role, i) => (
+                            <motion.div
+                              key={i}
+                              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/60 backdrop-blur-sm"
+                              initial={{ opacity: 0, x: -20 }}
+                              whileInView={{ opacity: 1, x: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ delay: 0.5 + i * 0.1 }}
+                            >
+                              <span>{role}</span>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="absolute -left-6 -top-6 w-48 h-48 bg-purple-200/30 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-500" aria-hidden="true" />
+                    </motion.div>
+
+                    {/* Feature 4: Analytics */}
+                    <motion.div
+                      className="md:col-span-2 group relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-50 to-emerald-50 p-8 md:p-10 border border-green-200/50 hover:shadow-xl transition-shadow duration-300"
+                      initial={{ opacity: 0, y: 40 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{ duration: 0.6, delay: 0.4 }}
+                    >
+                      <div className="relative z-10">
+                        <div className="w-12 h-12 rounded-2xl bg-green-500 flex items-center justify-center mb-4">
+                          <span className="text-2xl">📈</span>
+                        </div>
+                        <h3 className="text-2xl md:text-3xl font-display font-bold text-slate-900 mb-3">
+                          See patterns you didn't notice
+                        </h3>
+                        <p className="text-slate-700 text-lg mb-4">
+                          Comprehensive analytics beyond basic tracking—activity leaderboards, category performance, time-of-day heatmaps, and trend analysis.
+                        </p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {[
+                            { label: "Total time", value: "48h" },
+                            { label: "Avg completion", value: "82%" },
+                            { label: "Active days", value: "23" },
+                            { label: "Best activity", value: "Deep Work" },
+                          ].map((stat, i) => (
+                            <motion.div
+                              key={i}
+                              className="bg-white/60 backdrop-blur-sm rounded-xl p-3"
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              whileInView={{ opacity: 1, scale: 1 }}
+                              viewport={{ once: true }}
+                              transition={{ delay: 0.6 + i * 0.1 }}
+                            >
+                              <div className="text-xs text-slate-600 mb-1">{stat.label}</div>
+                              <div className="text-lg font-display font-bold text-slate-900">{stat.value}</div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="absolute -right-8 -top-8 w-64 h-64 bg-green-200/30 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-500" aria-hidden="true" />
+                    </motion.div>
+                  </div>
+                </div>
+              </section>
+
+              {/* CTA Section */}
+              <section className="relative w-full px-4 py-20 md:py-28 bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900 overflow-hidden">
+                <div className="absolute inset-0 opacity-30" aria-hidden="true">
+                  <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-electric-500/20 rounded-full blur-3xl" />
+                  <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-coral-500/20 rounded-full blur-3xl" />
+                </div>
+
+                <div className="relative z-10 max-w-4xl mx-auto text-center">
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
+                      Ready to build better habits?
+                    </h2>
+                    <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
+                      No signup. No payment. No BS. Just create a profile and start tracking.
+                    </p>
+                    <Button
+                      onClick={() => setShowCreateModal(true)}
+                      className="group relative px-10 py-7 bg-white hover:bg-slate-50 text-slate-900 font-semibold text-xl rounded-2xl shadow-2xl hover:shadow-white/20 transition-all duration-300 border-0"
+                      aria-label="Create your first profile"
+                    >
+                      <span className="relative z-10 flex items-center gap-2">
+                        Create Your First Profile
+                        <motion.span
+                          animate={{ x: [0, 4, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          →
+                        </motion.span>
+                      </span>
+                    </Button>
+                  </motion.div>
+
+                  {/* Existing profiles section (when user has profiles) */}
+                  {profiles.length > 0 && (
+                    <motion.div
+                      className="mt-16 pt-12 border-t border-white/10"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      <h3 className="text-2xl font-display font-semibold text-white mb-6">Your Profiles</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                        {profiles.map((profile: any, idx: number) => (
+                          <motion.button
+                            key={profile.id}
+                            className="group flex items-center gap-4 p-4 bg-white/10 hover:bg-white/15 backdrop-blur-sm rounded-2xl border border-white/20 hover:border-white/30 transition-all duration-200"
+                            onClick={() => handleProfileSwitch(profile.id)}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 * idx }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <Avatar className="w-12 h-12 border-2 border-white/30">
+                              <AvatarFallback
+                                className={cn(
+                                  "flex h-full w-full items-center justify-center rounded-full text-2xl",
+                                  {
+                                    "bg-[#8B5CF6] text-white": profile.type === "student",
+                                    "bg-[#3B82F6] text-white": profile.type === "professional" || profile.type === "custom",
+                                    "bg-[#F59E0B] text-white": profile.type === "entrepreneur",
+                                    "bg-[#EC4899] text-white": profile.type === "creative",
+                                    "bg-[#10B981] text-white": profile.type === "mom",
+                                  }
+                                )}
+                              >
+                                {profile.avatar}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 text-left">
+                              <div className="font-semibold text-white">{profile.name}</div>
+                              <div className="text-sm text-slate-300 flex items-center gap-3">
+                                <span className="flex items-center gap-1">
+                                  🔥 {getCurrentStreak(profile)}d
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  ✅ {getCompletionRate(profile)}%
+                                </span>
+                              </div>
+                            </div>
+                          </motion.button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {loading && (
+                    <div className="mt-8 text-white/60">Loading...</div>
+                  )}
+
+                  {storageError && (
+                    <div className="mt-8 text-coral-400" role="alert">
+                      {storageError}
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
           </>
         ) : (
           // --- Main Dashboard ---
