@@ -343,26 +343,24 @@ ${getRangeLabel()}
           </TabsList>
         </div>
 
-        {/* Tab Content - Scrollable */}
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full w-full">
-            <div className="p-3 md:p-6">
-              {/* Overview Tab */}
-              <TabsContent value="overview" className="mt-0">
-                <OverviewTab profile={profile} days={getDaysFromRange()} />
-              </TabsContent>
+        {/* Tab Content - Scrollable with native overflow for better mobile support */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="p-3 md:p-6">
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="mt-0">
+              <OverviewTab profile={profile} days={getDaysFromRange()} />
+            </TabsContent>
 
-              {/* Activities Tab */}
-              <TabsContent value="activities" className="mt-0">
-                <ActivitiesTab profile={profile} days={getDaysFromRange()} />
-              </TabsContent>
+            {/* Activities Tab */}
+            <TabsContent value="activities" className="mt-0">
+              <ActivitiesTab profile={profile} days={getDaysFromRange()} />
+            </TabsContent>
 
-              {/* Trends Tab */}
-              <TabsContent value="trends" className="mt-0">
-                <TrendsTab profile={profile} days={getDaysFromRange()} />
-              </TabsContent>
-            </div>
-          </ScrollArea>
+            {/* Trends Tab */}
+            <TabsContent value="trends" className="mt-0">
+              <TrendsTab profile={profile} days={getDaysFromRange()} />
+            </TabsContent>
+          </div>
         </div>
       </Tabs>
     </div>
