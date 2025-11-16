@@ -470,7 +470,7 @@ const AnalyticsModal = ({ isOpen, onClose, profile }: { isOpen: boolean; onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] w-full h-[90vh] p-0 overflow-hidden">
+      <DialogContent className="max-w-[98vw] sm:max-w-[95vw] w-full h-[95vh] sm:h-[90vh] p-0 overflow-hidden gap-0">
         <DashboardLayout profile={profile} onClose={onClose} />
       </DialogContent>
     </Dialog>
