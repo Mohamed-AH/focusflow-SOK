@@ -1826,18 +1826,16 @@ export default function FocusFlow() {
                 </Droppable>
               </DragDropContext>
               {/* Add Activity Floating Button */}
-              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  className="fixed bottom-24 right-6 z-20 rounded-full w-16 h-16 bg-gradient-to-br from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white text-4xl flex items-center justify-center shadow-2xl transition-all duration-300 border-2 border-white/50"
-                  style={{
-                    boxShadow: "0 8px 24px rgba(6,182,212,0.35), 0 0 0 0 rgba(6,182,212,0.5)",
-                  }}
-                  aria-label="Add Activity"
-                  onClick={handleAddActivity}
-                >
-                  +
-                </Button>
-              </motion.div>
+              <Button
+                className="fixed bottom-24 right-6 z-40 rounded-full w-16 h-16 bg-gradient-to-br from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white text-4xl flex items-center justify-center shadow-2xl transition-all duration-300 border-2 border-white/50 hover:scale-110 active:scale-95"
+                style={{
+                  boxShadow: "0 8px 24px rgba(6,182,212,0.35), 0 0 0 0 rgba(6,182,212,0.5)",
+                }}
+                aria-label="Add Activity"
+                onClick={handleAddActivity}
+              >
+                +
+              </Button>
             </div>
             {/* Bottom Navigation - Frosted Glass */}
             <nav className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-2xl border-t border-white/50 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] flex flex-row items-center justify-around py-3 z-30">
