@@ -98,14 +98,14 @@ const StatCard: React.FC<StatCardProps> = ({
 }) => {
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-6">
+      <CardContent className="p-3 sm:p-4 md:p-6">
         <div className="flex items-start justify-between">
-          <div className="space-y-2 flex-1">
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <div className="space-y-1 sm:space-y-2 flex-1 min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
             <div>
-              <h3 className="text-3xl font-bold tracking-tight">{value}</h3>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">{value}</h3>
               {subtitle && (
-                <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+                <p className="text-xs text-muted-foreground mt-1 truncate">{subtitle}</p>
               )}
             </div>
             {trend && (
@@ -129,7 +129,7 @@ const StatCard: React.FC<StatCardProps> = ({
               </div>
             )}
           </div>
-          <div className={cn('rounded-lg p-3 bg-muted', iconColor)}>
+          <div className={cn('rounded-lg p-2 sm:p-3 bg-muted flex-shrink-0', iconColor)}>
             {icon}
           </div>
         </div>
@@ -144,7 +144,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days }) => {
   }, [profile, days]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
       {/* Total Focused Time */}
       <StatCard
         title="Total Focused Time"
@@ -200,9 +200,9 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days }) => {
         <StatCard
           title="Favorite Activity"
           value={
-            <span className="flex items-center gap-2 text-2xl">
-              <span>{metrics.favoriteActivity.icon}</span>
-              <span className="text-xl truncate">{metrics.favoriteActivity.name}</span>
+            <span className="flex items-center gap-1 sm:gap-2 text-lg sm:text-2xl">
+              <span className="text-xl sm:text-2xl">{metrics.favoriteActivity.icon}</span>
+              <span className="text-sm sm:text-lg md:text-xl truncate">{metrics.favoriteActivity.name}</span>
             </span>
           }
           subtitle={`Completed ${metrics.favoriteActivity.count} times`}

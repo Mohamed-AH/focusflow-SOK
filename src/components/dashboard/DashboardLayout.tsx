@@ -225,24 +225,25 @@ ${getRangeLabel()}
     <div className="w-full h-full flex flex-col bg-background">
       {/* Header */}
       <div className="border-b bg-card">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div>
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <BarChart3 className="h-6 w-6 text-primary" />
-              Analytics Dashboard
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between px-3 md:px-6 py-3 md:py-4 gap-3">
+          <div className="flex-shrink-0">
+            <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <span className="truncate">Analytics Dashboard</span>
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs md:text-sm text-muted-foreground mt-1 truncate">
               {profile.avatar} {profile.name} • {getRangeLabel()}
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             {/* Date Range Selector */}
-            <div className="flex items-center gap-2 bg-background rounded-lg border p-1">
+            <div className="flex items-center gap-1 bg-background rounded-lg border p-1">
               <Button
                 variant={dateRange === '7days' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setDateRange('7days')}
+                className="flex-1 sm:flex-none text-xs px-2"
               >
                 7D
               </Button>
@@ -250,6 +251,7 @@ ${getRangeLabel()}
                 variant={dateRange === '30days' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setDateRange('30days')}
+                className="flex-1 sm:flex-none text-xs px-2"
               >
                 30D
               </Button>
@@ -257,6 +259,7 @@ ${getRangeLabel()}
                 variant={dateRange === '90days' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setDateRange('90days')}
+                className="flex-1 sm:flex-none text-xs px-2"
               >
                 90D
               </Button>
@@ -264,42 +267,45 @@ ${getRangeLabel()}
                 variant={dateRange === 'custom' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setDateRange('custom')}
+                className="flex-1 sm:flex-none px-2"
               >
-                <Calendar className="h-4 w-4" />
+                <Calendar className="h-3 w-3 md:h-4 md:w-4" />
               </Button>
             </div>
 
             {/* Action Buttons */}
-            <Button variant="outline" size="sm" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleShare} className="flex-1 sm:flex-none text-xs">
+                <Share2 className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">Share</span>
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleExport} className="flex-1 sm:flex-none text-xs">
+                <Download className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">Export</span>
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Custom Date Range Picker (if selected) */}
         {dateRange === 'custom' && (
-          <div className="px-6 pb-4 flex items-center gap-4">
+          <div className="px-3 md:px-6 pb-3 md:pb-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium">From:</label>
+              <label className="text-xs md:text-sm font-medium whitespace-nowrap">From:</label>
               <input
                 type="date"
                 value={customStartDate}
                 onChange={(e) => setCustomStartDate(e.target.value)}
-                className="px-3 py-1 border rounded-md text-sm"
+                className="flex-1 px-2 md:px-3 py-1 border rounded-md text-xs md:text-sm"
               />
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium">To:</label>
+              <label className="text-xs md:text-sm font-medium whitespace-nowrap">To:</label>
               <input
                 type="date"
                 value={customEndDate}
                 onChange={(e) => setCustomEndDate(e.target.value)}
-                className="px-3 py-1 border rounded-md text-sm"
+                className="flex-1 px-2 md:px-3 py-1 border rounded-md text-xs md:text-sm"
               />
             </div>
           </div>
@@ -308,35 +314,38 @@ ${getRangeLabel()}
 
       {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <div className="border-b bg-card px-6">
-          <TabsList className="bg-transparent border-b-0">
+        <div className="border-b bg-card px-3 md:px-6">
+          <TabsList className="bg-transparent border-b-0 w-full justify-start">
             <TabsTrigger
               value="overview"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none text-xs md:text-sm flex-1 sm:flex-none"
             >
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Overview
+              <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Overview</span>
+              <span className="sm:hidden">Over.</span>
             </TabsTrigger>
             <TabsTrigger
               value="activities"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none text-xs md:text-sm flex-1 sm:flex-none"
             >
-              <Activity className="h-4 w-4 mr-2" />
-              Activities
+              <Activity className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Activities</span>
+              <span className="sm:hidden">Acts.</span>
             </TabsTrigger>
             <TabsTrigger
               value="trends"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none text-xs md:text-sm flex-1 sm:flex-none"
             >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Trends
+              <BarChart3 className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Trends</span>
+              <span className="sm:hidden">Trend</span>
             </TabsTrigger>
           </TabsList>
         </div>
 
         {/* Tab Content - Scrollable */}
         <ScrollArea className="flex-1">
-          <div className="p-6">
+          <div className="p-3 md:p-6">
             {/* Overview Tab */}
             <TabsContent value="overview" className="mt-0">
               <OverviewTab profile={profile} days={getDaysFromRange()} />
