@@ -559,7 +559,7 @@ const AnalyticsModal = ({ isOpen, onClose, profile }: { isOpen: boolean; onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[98vw] sm:max-w-[95vw] w-full h-[95vh] sm:h-[90vh] p-0 overflow-hidden gap-0">
+      <DialogContent className="max-w-[98vw] sm:max-w-[95vw] w-full h-[95vh] sm:h-[90vh] p-0 overflow-hidden gap-0 bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900 border-0 shadow-2xl rounded-3xl">
         <DashboardLayout profile={profile} onClose={onClose} />
       </DialogContent>
     </Dialog>
@@ -598,92 +598,122 @@ const SettingsModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <span className="text-2xl">⚙️</span>
+      <DialogContent className="sm:max-w-[540px] rounded-3xl p-0 overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900">
+        {/* Mesh gradient overlay */}
+        <div className="absolute inset-0 bg-mesh-gradient opacity-20 pointer-events-none" aria-hidden="true" />
+
+        <DialogHeader className="relative px-8 pt-8 pb-6">
+          <DialogTitle className="flex items-center gap-3 text-3xl font-display font-bold bg-gradient-to-r from-white to-electric-200 bg-clip-text text-transparent">
+            <span className="text-3xl">⚙️</span>
             Settings
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-slate-300 font-sans text-base mt-2">
             Customize your FocusFlow experience
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          {/* Profile Info */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-            <span className="text-3xl">{profile.avatar}</span>
-            <div>
-              <div className="font-semibold">{profile.name}</div>
-              <div className="text-sm text-muted-foreground capitalize">{profile.type} Profile</div>
+        <div className="relative space-y-6 px-8 pb-8">
+          {/* Profile Info Card */}
+          <motion.div
+            className="flex items-center gap-4 p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="w-14 h-14 text-4xl bg-white/10 border-2 border-white/30 rounded-2xl flex items-center justify-center">
+              {profile.avatar}
             </div>
-          </div>
+            <div>
+              <div className="font-display font-bold text-white text-lg">{profile.name}</div>
+              <div className="text-sm text-slate-300 font-sans capitalize">{profile.type} Profile</div>
+            </div>
+          </motion.div>
 
           {/* Completion Goal Slider */}
-          <div className="space-y-3">
+          <motion.div
+            className="space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
             <div className="flex items-center justify-between">
-              <Label htmlFor="completion-goal" className="text-sm font-medium">
+              <Label htmlFor="completion-goal" className="text-sm font-sans font-semibold text-white">
                 Daily Completion Goal
               </Label>
-              <span className="text-2xl font-bold text-primary">{completionGoal}%</span>
+              <span className="text-4xl font-display font-bold bg-gradient-to-r from-electric-400 to-coral-400 bg-clip-text text-transparent">{completionGoal}%</span>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-slate-300 font-sans">
               Complete at least this percentage of activities to maintain your streak
             </p>
-            <input
-              id="completion-goal"
-              type="range"
-              min="50"
-              max="100"
-              step="5"
-              value={completionGoal}
-              onChange={(e) => setCompletionGoal(parseInt(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="relative pt-2">
+              <input
+                id="completion-goal"
+                type="range"
+                min="50"
+                max="100"
+                step="5"
+                value={completionGoal}
+                onChange={(e) => setCompletionGoal(parseInt(e.target.value))}
+                className="w-full h-3 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-electric-500 [&::-webkit-slider-thumb]:to-electric-600 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-electric-500/50 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gradient-to-r [&::-moz-range-thumb]:from-electric-500 [&::-moz-range-thumb]:to-electric-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-lg [&::-moz-range-thumb]:shadow-electric-500/50"
+                style={{
+                  background: `linear-gradient(to right, #06b6d4 0%, #06b6d4 ${(completionGoal - 50) * 2}%, rgba(255,255,255,0.1) ${(completionGoal - 50) * 2}%, rgba(255,255,255,0.1) 100%)`
+                }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-slate-400 font-sans font-medium">
               <span>50%</span>
               <span>75%</span>
               <span>100%</span>
             </div>
-          </div>
-
-          {/* Theme Section (Placeholder for future) */}
-          <div className="space-y-2 opacity-50">
-            <Label className="text-sm font-medium">Theme</Label>
-            <p className="text-xs text-muted-foreground">
-              🌙 Dark mode coming soon!
-            </p>
-          </div>
+          </motion.div>
 
           {/* Profile Stats */}
-          <div className="pt-4 border-t space-y-2">
-            <div className="text-sm font-medium mb-2">Profile Statistics</div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="p-2 rounded-lg bg-muted">
-                <div className="text-muted-foreground text-xs">Current Streak</div>
-                <div className="font-semibold">{profile.streaks.current} days</div>
-              </div>
-              <div className="p-2 rounded-lg bg-muted">
-                <div className="text-muted-foreground text-xs">Best Streak</div>
-                <div className="font-semibold">{profile.streaks.best} days</div>
-              </div>
-              <div className="p-2 rounded-lg bg-muted">
-                <div className="text-muted-foreground text-xs">Perfect Days</div>
-                <div className="font-semibold">{profile.streaks.perfectDays}</div>
-              </div>
-              <div className="p-2 rounded-lg bg-muted">
-                <div className="text-muted-foreground text-xs">Total Activities</div>
-                <div className="font-semibold">{Object.keys(profile.activities).length}</div>
-              </div>
+          <motion.div
+            className="pt-6 border-t border-white/10 space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="text-base font-display font-bold text-white">Profile Statistics</div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { icon: "🔥", label: "Current Streak", value: `${profile.streaks.current} days`, gradient: "from-coral-400 to-amber-400" },
+                { icon: "🏆", label: "Best Streak", value: `${profile.streaks.best} days`, gradient: "from-amber-400 to-yellow-400" },
+                { icon: "⭐", label: "Perfect Days", value: profile.streaks.perfectDays, gradient: "from-electric-400 to-blue-400" },
+                { icon: "📋", label: "Activities", value: Object.keys(profile.activities).length, gradient: "from-green-400 to-emerald-400" },
+              ].map((stat, i) => (
+                <motion.div
+                  key={i}
+                  className="p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 + i * 0.05 }}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">{stat.icon}</span>
+                    <div className="text-xs text-slate-400 font-sans">{stat.label}</div>
+                  </div>
+                  <div className={`text-2xl font-display font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
+                    {stat.value}
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="relative px-8 pb-8 flex flex-row justify-end gap-3">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            className="rounded-xl px-6 py-2 text-white hover:bg-white/10 font-sans"
+          >
             Cancel
           </Button>
-          <Button onClick={handleSave}>
+          <Button
+            onClick={handleSave}
+            className="bg-gradient-to-r from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white rounded-xl px-8 py-2 font-sans font-semibold shadow-lg shadow-electric-500/30"
+          >
             Save Changes
           </Button>
         </DialogFooter>
@@ -697,7 +727,7 @@ const ShareAchievement = ({ profile, onClose }: { profile: any; onClose: () => v
   const today = getTodayDate();
   const completionRate = getCompletionRate(profile);
   const streak = getCurrentStreak(profile);
-  
+
   const generateShareText = () => {
     return `FocusFlow Progress Update\n\n📅 ${today}\n🎯 ${completionRate}% Complete\n🔥 ${streak} Day Streak\n`;
   };
@@ -709,6 +739,7 @@ const ShareAchievement = ({ profile, onClose }: { profile: any; onClose: () => v
         await navigator.share({
           text: text
         });
+        toast({ title: "Shared!", description: "Your progress has been shared!" });
       } catch (err) {
         navigator.clipboard.writeText(text);
         toast({ title: "Copied to clipboard!", description: "Share your progress with others!" });
@@ -722,20 +753,97 @@ const ShareAchievement = ({ profile, onClose }: { profile: any; onClose: () => v
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Share Your Progress</DialogTitle>
-          <DialogDescription>
-            Share your daily achievements with others!
+      <DialogContent className="sm:max-w-[480px] rounded-3xl p-0 overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900">
+        {/* Mesh gradient overlay */}
+        <div className="absolute inset-0 bg-mesh-gradient opacity-20 pointer-events-none" aria-hidden="true" />
+
+        <DialogHeader className="relative px-8 pt-8 pb-6">
+          <DialogTitle className="text-3xl font-display font-bold bg-gradient-to-r from-white to-electric-200 bg-clip-text text-transparent">
+            Share Your Progress
+          </DialogTitle>
+          <DialogDescription className="text-slate-300 font-sans text-base mt-2">
+            Show off your daily achievements!
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col items-center space-y-4 p-4">
-          <pre className="bg-slate-100 p-4 rounded-lg font-mono text-sm">
-            {generateShareText()}
-          </pre>
-          <Button onClick={handleShare} className="w-full">
-            Share Progress
-          </Button>
+
+        <div className="relative px-8 pb-8 space-y-6">
+          {/* Preview Card */}
+          <motion.div
+            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-electric-500/20 to-coral-500/20 border border-white/20 p-6"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            {/* Background pattern */}
+            <div className="absolute inset-0 opacity-10" style={{
+              backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+              backgroundSize: '24px 24px'
+            }} aria-hidden="true" />
+
+            <div className="relative space-y-4">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 text-3xl bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl flex items-center justify-center">
+                    {profile.avatar}
+                  </div>
+                  <div>
+                    <div className="font-display font-bold text-white text-lg">{profile.name}</div>
+                    <div className="text-sm text-electric-200 font-sans">FocusFlow</div>
+                  </div>
+                </div>
+                <div className="text-sm text-slate-300 font-sans">{today}</div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <div className="text-xs text-slate-300 font-sans mb-1">Completion</div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-display font-bold bg-gradient-to-r from-electric-300 to-electric-100 bg-clip-text text-transparent">
+                      {completionRate}
+                    </span>
+                    <span className="text-lg font-display font-bold text-white">%</span>
+                  </div>
+                  <div className="text-lg mt-1">🎯</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <div className="text-xs text-slate-300 font-sans mb-1">Streak</div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-display font-bold bg-gradient-to-r from-coral-300 to-amber-300 bg-clip-text text-transparent">
+                      {streak}
+                    </span>
+                    <span className="text-lg font-display font-bold text-white">d</span>
+                  </div>
+                  <div className="text-lg mt-1">🔥</div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="pt-3 border-t border-white/10">
+                <div className="text-xs text-slate-400 font-sans text-center">
+                  Track habits. Build streaks. Stay focused.
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="flex-1 rounded-xl px-6 py-3 text-white hover:bg-white/10 font-sans"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleShare}
+              className="flex-1 bg-gradient-to-r from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white rounded-xl px-6 py-3 font-sans font-semibold shadow-lg shadow-electric-500/30"
+            >
+              📤 Share
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -2110,12 +2218,13 @@ export default function FocusFlow() {
 
         {/* Add/Edit Activity Modal */}
         <Dialog open={showActivityModal} onOpenChange={setShowActivityModal}>
-          <DialogContent className="max-w-lg w-full rounded-2xl p-0 overflow-hidden">
-            <DialogHeader className="bg-primary/10 px-6 py-4">
-              <DialogTitle className="text-xl font-bold text-primary">
+          <DialogContent className="max-w-lg w-full rounded-3xl p-0 overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900">
+            <div className="absolute inset-0 bg-mesh-gradient opacity-20 pointer-events-none" />
+            <DialogHeader className="relative px-6 py-5 border-b border-white/10">
+              <DialogTitle className="text-3xl font-display font-bold bg-gradient-to-r from-white to-electric-200 bg-clip-text text-transparent">
                 {activityEditId ? "Edit Activity" : "Add Activity"}
               </DialogTitle>
-              <DialogDescription className="text-slate-600">
+              <DialogDescription className="text-slate-300 font-sans mt-1">
                 {activityEditId
                   ? "Update your activity details"
                   : "Add a new custom activity to your day"}
@@ -2123,13 +2232,17 @@ export default function FocusFlow() {
             </DialogHeader>
             <form
               onSubmit={handleSaveActivity}
-              className="px-6 py-4"
+              className="relative px-6 py-5 space-y-5"
               autoComplete="off"
             >
               {/* Name */}
-              <div className="mb-4">
-                <Label htmlFor="activity-name" className="block mb-1 font-medium text-slate-700">
-                  Activity Name <span className="text-red-500">*</span>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Label htmlFor="activity-name" className="block mb-2 font-sans font-medium text-white">
+                  Activity Name <span className="text-coral-400">*</span>
                 </Label>
                 <Input
                   id="activity-name"
@@ -2139,16 +2252,21 @@ export default function FocusFlow() {
                   value={activityForm?.name || ""}
                   onChange={e => setActivityForm((f: any) => ({ ...f, name: e.target.value.slice(0, 50) }))}
                   placeholder="e.g. Yoga, Deep Work, Family Time"
-                  className="w-full"
+                  className="w-full bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-electric-400 rounded-xl px-4 py-3 font-sans backdrop-blur-xl"
                   aria-required="true"
                   aria-label="Activity name"
                 />
-                <span className="text-xs text-slate-400 mt-1">{activityForm?.name?.length || 0}/50</span>
-              </div>
+                <span className="text-xs text-slate-400 mt-1.5 block font-sans">{activityForm?.name?.length || 0}/50</span>
+              </motion.div>
               {/* Duration and Time */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <motion.div
+                className="grid grid-cols-2 gap-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+              >
                 <div>
-                  <Label htmlFor="activity-duration" className="block mb-1 font-medium text-slate-700">
+                  <Label htmlFor="activity-duration" className="block mb-2 font-sans font-medium text-white">
                     Duration (minutes)
                   </Label>
                   <Input
@@ -2161,14 +2279,14 @@ export default function FocusFlow() {
                     required
                     value={activityForm?.duration || 15}
                     onChange={e => setActivityForm((f: any) => ({ ...f, duration: Math.max(15, Math.min(480, Number(e.target.value))) }))}
-                    className="w-full"
+                    className="w-full bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-electric-400 rounded-xl px-4 py-3 font-display font-bold backdrop-blur-xl"
                     aria-required="true"
                     aria-label="Activity duration"
                   />
-                  <span className="text-xs text-slate-400 mt-1">15 min to 8 hours</span>
+                  <span className="text-xs text-slate-400 mt-1.5 block font-sans">15 min to 8 hours</span>
                 </div>
                 <div>
-                  <Label htmlFor="activity-time" className="block mb-1 font-medium text-slate-700">
+                  <Label htmlFor="activity-time" className="block mb-2 font-sans font-medium text-white">
                     Start Time
                   </Label>
                   <TimePickerInput
@@ -2176,15 +2294,19 @@ export default function FocusFlow() {
                     name="activity-time"
                     value={activityForm?.startTime}
                     onChange={(time) => setActivityForm((f: any) => ({ ...f, startTime: time }))}
-                    className="w-full"
+                    className="w-full bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-electric-400 rounded-xl px-4 py-3 font-display font-bold backdrop-blur-xl"
                     aria-label="Activity start time"
                   />
-                  <span className="text-xs text-slate-400 mt-1">Optional</span>
+                  <span className="text-xs text-slate-400 mt-1.5 block font-sans">Optional</span>
                 </div>
-              </div>
+              </motion.div>
               {/* Category */}
-              <div className="mb-4">
-                <Label htmlFor="activity-category" className="block mb-1 font-medium text-slate-700">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Label htmlFor="activity-category" className="block mb-2 font-sans font-medium text-white">
                   Category
                 </Label>
                 <select
@@ -2193,74 +2315,84 @@ export default function FocusFlow() {
                   required
                   value={activityForm?.category || ""}
                   onChange={e => setActivityForm((f: any) => ({ ...f, category: e.target.value }))}
-                  className="w-full border border-slate-200 rounded-lg px-2 py-2"
+                  className="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 font-sans backdrop-blur-xl focus:bg-white/15 focus:border-electric-400 focus:outline-none"
                   aria-required="true"
                   aria-label="Activity category"
                 >
-                  <option value="" disabled>
+                  <option value="" disabled className="bg-slate-800 text-slate-400">
                     Select category
                   </option>
                   {ACTIVITY_CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>
+                    <option key={cat} value={cat} className="bg-slate-800 text-white">
                       {cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </option>
                   ))}
                 </select>
-              </div>
+              </motion.div>
               {/* Color Picker */}
-              <div className="mb-4">
-                <Label className="block mb-1 font-medium text-slate-700">Color</Label>
-                <div className="flex flex-row items-center space-x-2">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+              >
+                <Label className="block mb-3 font-sans font-medium text-white">Color</Label>
+                <div className="flex flex-row items-center gap-3 flex-wrap">
                   {ACTIVITY_COLORS.map(color => (
-                    <button
+                    <motion.button
                       key={color}
                       type="button"
                       className={cn(
-                        "w-7 h-7 rounded-full border-2 flex items-center justify-center",
+                        "w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-200",
                         activityForm?.color === color
-                          ? "border-primary ring-2 ring-primary"
-                          : "border-slate-200"
+                          ? "border-electric-400 ring-4 ring-electric-400/30 scale-110"
+                          : "border-white/30 hover:border-white/50 hover:scale-105"
                       )}
                       style={{ background: color }}
                       onClick={() => setActivityForm((f: any) => ({ ...f, color }))}
                       aria-label={`Pick color ${color}`}
-                    />
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {activityForm?.color === color && (
+                        <span className="text-white text-lg font-bold">✓</span>
+                      )}
+                    </motion.button>
                   ))}
                 </div>
-              </div>
+              </motion.div>
               {/* Emoji Picker */}
-              <div className="mb-4">
-                <Label className="block mb-1 font-medium text-slate-700">Emoji Icon</Label>
-                <div className="flex flex-row items-center space-x-2">
-                  <Button
-                    type="button"
-                    className="w-12 h-12 text-2xl bg-white border border-slate-200 rounded-full shadow-none"
-                    aria-label="Current activity icon"
-                  >
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <Label className="block mb-3 font-sans font-medium text-white">Emoji Icon</Label>
+                <div className="flex flex-row items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-3xl backdrop-blur-xl">
                     {activityForm?.icon}
-                  </Button>
+                  </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         type="button"
-                        className="text-xs px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg shadow-none"
+                        className="px-5 py-2.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-sans font-medium backdrop-blur-xl transition-all duration-200"
                         aria-label="Pick emoji"
                       >
                         Pick Emoji
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="max-h-64 overflow-y-auto p-2">
-                      <ScrollArea className="h-48 w-64">
+                    <DropdownMenuContent className="max-h-72 overflow-y-auto p-3 bg-slate-900/95 backdrop-blur-xl border-white/20 rounded-2xl">
+                      <ScrollArea className="h-56 w-72">
                         {EMOJI_CATEGORIES.map(cat => (
-                          <div key={cat.name} className="mb-2">
-                            <div className="text-xs text-slate-400 mb-1">{cat.name}</div>
-                            <div className="flex flex-wrap gap-1">
+                          <div key={cat.name} className="mb-3">
+                            <div className="text-xs text-slate-400 mb-2 font-sans font-medium uppercase tracking-wider">{cat.name}</div>
+                            <div className="flex flex-wrap gap-1.5">
                               {cat.emojis.map(emoji => (
                                 <button
                                   key={emoji}
                                   type="button"
                                   className={cn(
-                                    "w-8 h-8 text-lg rounded-full flex items-center justify-center hover:bg-primary/10 focus:bg-primary/20 focus:outline-none"
+                                    "w-10 h-10 text-xl rounded-xl flex items-center justify-center transition-all duration-200 hover:bg-electric-500/20 focus:bg-electric-500/30 focus:outline-none"
                                   )}
                                   onClick={() => setActivityForm((f: any) => ({ ...f, icon: emoji }))}
                                   aria-label={`Pick emoji ${emoji}`}
@@ -2275,19 +2407,19 @@ export default function FocusFlow() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </div>
-              <DialogFooter className="mt-6 flex flex-row justify-end space-x-2">
+              </motion.div>
+              <DialogFooter className="mt-8 flex flex-row justify-end gap-3 pt-5 border-t border-white/10">
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => setShowActivityModal(false)}
-                  className="rounded-lg"
+                  className="rounded-xl px-6 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 font-sans font-medium"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-primary text-white rounded-lg px-6"
+                  className="bg-gradient-to-r from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white rounded-xl px-8 py-2.5 font-sans font-bold shadow-lg shadow-electric-500/30 border-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={!activityForm?.name?.trim() || activityForm?.name?.length > 50}
                   aria-disabled={!activityForm?.name?.trim() || activityForm?.name?.length > 50}
                 >
