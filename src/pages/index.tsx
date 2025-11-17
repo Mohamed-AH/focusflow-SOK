@@ -366,25 +366,25 @@ const ActivityCard = ({
     }
   }, [state]);
 
-  // Glassmorphism styling based on state
+  // Glassmorphism styling based on state - Dark Mode
   const cardStyles = {
     planned: {
-      bg: "bg-white/70 backdrop-blur-xl",
-      border: "border-slate-200/50",
+      bg: "bg-white/10 backdrop-blur-xl",
+      border: "border-white/20",
       shadow: "shadow-sm hover:shadow-md",
-      text: "text-slate-800",
+      text: "text-white",
     },
     inprogress: {
-      bg: "bg-electric-50/80 backdrop-blur-xl",
+      bg: "bg-electric-500/20 backdrop-blur-xl",
       border: "border-electric-400/60",
-      shadow: "shadow-lg shadow-electric-500/20",
-      text: "text-slate-900",
+      shadow: "shadow-lg shadow-electric-500/30",
+      text: "text-white",
     },
     completed: {
-      bg: "bg-gradient-to-r from-green-50/90 to-emerald-50/90 backdrop-blur-xl",
+      bg: "bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-xl",
       border: "border-green-400/50",
-      shadow: "shadow-md shadow-green-500/10",
-      text: "text-green-800",
+      shadow: "shadow-md shadow-green-500/20",
+      text: "text-green-300",
     },
   };
 
@@ -1727,8 +1727,8 @@ export default function FocusFlow() {
           // --- Main Dashboard ---
           <main className="w-full max-w-2xl mx-auto flex-1 flex flex-col items-center px-4 pb-2 relative">
             {/* Background atmosphere */}
-            <div className="fixed inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 -z-10" aria-hidden="true" />
-            <div className="fixed inset-0 bg-mesh-gradient opacity-20 -z-10" aria-hidden="true" />
+            <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-ocean-950 to-slate-900 -z-10" aria-hidden="true" />
+            <div className="fixed inset-0 bg-mesh-gradient opacity-30 -z-10" aria-hidden="true" />
 
             {/* Top Bar */}
             <motion.div
@@ -1759,11 +1759,11 @@ export default function FocusFlow() {
                     {currentProfile.avatar}
                   </AvatarFallback>
                 </Avatar>
-                <span className="font-sans font-semibold text-slate-900 text-base truncate max-w-[140px]">{currentProfile.name}</span>
+                <span className="font-sans font-semibold text-white text-base truncate max-w-[140px]">{currentProfile.name}</span>
               </div>
               <div className="flex-1 flex flex-col items-center">
-                <span className="font-display text-sm font-semibold text-slate-800">{getTodayDate()}</span>
-                <span className="font-sans text-xs text-slate-500 uppercase tracking-wide">{getDayOfWeek(getTodayDate())}</span>
+                <span className="font-display text-sm font-semibold text-white">{getTodayDate()}</span>
+                <span className="font-sans text-xs text-slate-300 uppercase tracking-wide">{getDayOfWeek(getTodayDate())}</span>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -1775,13 +1775,13 @@ export default function FocusFlow() {
                     <span className="text-lg">⇄</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="bg-slate-900/95 backdrop-blur-xl border-white/20 rounded-2xl">
                   {profiles.map((profile: Profile) => (
                     <button
                       key={profile.id}
                       className={cn(
-                        "flex flex-row items-center w-full px-2 py-2 rounded-lg",
-                        currentProfileId === profile.id ? "bg-primary/10" : "hover:bg-slate-100"
+                        "flex flex-row items-center w-full px-2 py-2 rounded-lg text-white",
+                        currentProfileId === profile.id ? "bg-electric-500/20" : "hover:bg-white/10"
                       )}
                       onClick={() => handleProfileSwitch(profile.id)}
                       aria-label={`Switch to profile ${profile.name}`}
@@ -1790,9 +1790,9 @@ export default function FocusFlow() {
                       <span className="text-sm">{profile.name}</span>
                     </button>
                   ))}
-                  <div className="border-t border-slate-100 my-1" />
+                  <div className="border-t border-white/10 my-1" />
                   <button
-                    className="w-full text-left px-2 py-2 text-primary hover:bg-primary/10 rounded-lg"
+                    className="w-full text-left px-2 py-2 text-electric-400 hover:bg-electric-500/20 rounded-lg font-medium"
                     onClick={() => setShowCreateModal(true)}
                   >
                     + Create New Profile
@@ -1818,7 +1818,7 @@ export default function FocusFlow() {
               </div>
 
               {/* Glass card container */}
-              <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50">
+              <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/20">
                 <ProgressRing
                   size={180}
                   animate
@@ -1859,7 +1859,7 @@ export default function FocusFlow() {
                       : []),
                   ]}
                 >
-                  <span className="text-5xl font-display font-bold text-slate-900">
+                  <span className="text-5xl font-display font-bold text-white">
                     {getCompletionRate(currentProfile)}%
                   </span>
                   <span className="text-sm font-sans text-coral-500 font-semibold flex items-center mt-2" aria-label="Current streak">
@@ -1917,22 +1917,22 @@ export default function FocusFlow() {
             </motion.div>
             {/* Today's Focus Section */}
             <motion.div
-              className="w-full flex flex-row items-center justify-between mt-6 mb-4 px-2 bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-sm"
+              className="w-full flex flex-row items-center justify-between mt-6 mb-4 px-2 bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 shadow-sm"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
             >
               <div className="flex flex-col items-start">
-                <span className="font-sans text-xs text-slate-500 uppercase tracking-wide">Date</span>
-                <span className="font-display text-base font-bold text-slate-800">{getTodayDate()}</span>
+                <span className="font-sans text-xs text-slate-300 uppercase tracking-wide">Date</span>
+                <span className="font-display text-base font-bold text-white">{getTodayDate()}</span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="font-sans text-xs text-coral-500 uppercase tracking-wide">🔥 Streak</span>
-                <span className="font-display text-2xl font-bold text-coral-500">{getCurrentStreak(currentProfile)}<span className="text-sm">d</span></span>
+                <span className="font-sans text-xs text-coral-400 uppercase tracking-wide">🔥 Streak</span>
+                <span className="font-display text-2xl font-bold text-coral-400">{getCurrentStreak(currentProfile)}<span className="text-sm">d</span></span>
               </div>
               <div className="flex flex-col items-end">
-                <span className="font-sans text-xs text-electric-600 uppercase tracking-wide">Progress</span>
-                <span className="font-display text-2xl font-bold text-electric-600">
+                <span className="font-sans text-xs text-electric-400 uppercase tracking-wide">Progress</span>
+                <span className="font-display text-2xl font-bold text-electric-400">
                   {getCompletionRate(currentProfile)}<span className="text-sm">%</span>
                 </span>
               </div>
@@ -1945,7 +1945,7 @@ export default function FocusFlow() {
               transition={{ duration: 0.4, delay: 0.6 }}
             >
               <motion.h3
-                className="text-2xl font-display font-bold text-slate-900 mb-4 px-2"
+                className="text-2xl font-display font-bold text-white mb-4 px-2"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.7 }}
@@ -2014,10 +2014,10 @@ export default function FocusFlow() {
               </Button>
             </motion.div>
             {/* Bottom Navigation - Frosted Glass */}
-            <nav className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-2xl border-t border-white/50 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] flex flex-row items-center justify-around py-3 z-30">
+            <nav className="fixed bottom-0 left-0 w-full bg-slate-900/80 backdrop-blur-2xl border-t border-white/10 shadow-[0_-4px_16px_rgba(0,0,0,0.3)] flex flex-row items-center justify-around py-3 z-30">
               <Button
                 variant="ghost"
-                className="flex flex-col items-center px-4 py-2 text-electric-600 hover:bg-electric-50/80 rounded-2xl transition-all duration-200 group"
+                className="flex flex-col items-center px-4 py-2 text-electric-400 hover:bg-electric-500/20 rounded-2xl transition-all duration-200 group"
                 aria-label="Analytics"
                 onClick={() => setShowAnalytics(true)}
               >
@@ -2026,7 +2026,7 @@ export default function FocusFlow() {
               </Button>
               <Button
                 variant="ghost"
-                className="flex flex-col items-center px-4 py-2 text-coral-500 hover:bg-coral-50/80 rounded-2xl transition-all duration-200 group"
+                className="flex flex-col items-center px-4 py-2 text-coral-400 hover:bg-coral-500/20 rounded-2xl transition-all duration-200 group"
                 aria-label="Share"
                 onClick={() => setShowShare(true)}
               >
@@ -2035,7 +2035,7 @@ export default function FocusFlow() {
               </Button>
               <Button
                 variant="ghost"
-                className="flex flex-col items-center px-4 py-2 text-ocean-600 hover:bg-ocean-50/80 rounded-2xl transition-all duration-200 group"
+                className="flex flex-col items-center px-4 py-2 text-ocean-400 hover:bg-ocean-500/20 rounded-2xl transition-all duration-200 group"
                 aria-label="Settings"
                 onClick={() => setShowSettings(true)}
               >
