@@ -52,6 +52,7 @@ interface Profile {
     workingHours: { start: string; end: string };
     breakReminders: boolean;
     weeklyGoal: number;
+    darkMode: boolean;
   };
 }
 
@@ -346,6 +347,7 @@ const ActivityCard = ({
   onEdit,
   onDelete,
   dragHandleProps,
+  darkMode = false,
 }: {
   activity: any;
   state?: "planned" | "inprogress" | "completed";
@@ -353,6 +355,7 @@ const ActivityCard = ({
   onEdit?: () => void;
   onDelete?: () => void;
   dragHandleProps?: any;
+  darkMode?: boolean;
 }) => {
   const accent = activity.color || COLOR_PALETTE.primary;
   const [showCelebration, setShowCelebration] = React.useState(false);
@@ -366,8 +369,27 @@ const ActivityCard = ({
     }
   }, [state]);
 
-  // Glassmorphism styling based on state
-  const cardStyles = {
+  // Glassmorphism styling based on state and dark mode
+  const cardStyles = darkMode ? {
+    planned: {
+      bg: "bg-white/10 backdrop-blur-xl",
+      border: "border-white/20",
+      shadow: "shadow-sm hover:shadow-md",
+      text: "text-white",
+    },
+    inprogress: {
+      bg: "bg-electric-500/20 backdrop-blur-xl",
+      border: "border-electric-400/60",
+      shadow: "shadow-lg shadow-electric-500/30",
+      text: "text-white",
+    },
+    completed: {
+      bg: "bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-xl",
+      border: "border-green-400/50",
+      shadow: "shadow-md shadow-green-500/20",
+      text: "text-green-300",
+    },
+  } : {
     planned: {
       bg: "bg-white/70 backdrop-blur-xl",
       border: "border-slate-200/50",
@@ -486,7 +508,7 @@ const ActivityCard = ({
           {activity.name}
         </span>
         <div className="flex items-center gap-2 mt-1">
-          <span className="font-display text-sm text-electric-600 font-semibold">
+          <span className="font-display text-sm text-electric-400 dark:text-electric-400 font-semibold">
             {activity.duration}
           </span>
           <span className="font-sans text-xs text-slate-500">min</span>
@@ -581,17 +603,19 @@ const SettingsModal = ({
   if (!profile) return null;
 
   const [completionGoal, setCompletionGoal] = React.useState(profile.preferences.completionGoal);
+  const [darkMode, setDarkMode] = React.useState(profile.preferences.darkMode || false);
 
   const handleSave = () => {
     onUpdateProfile({
       preferences: {
         ...profile.preferences,
         completionGoal: completionGoal,
+        darkMode: darkMode,
       },
     });
     toast({
       title: "Settings Saved!",
-      description: `Completion goal set to ${completionGoal}%`
+      description: `Settings updated successfully`
     });
     onClose();
   };
@@ -627,6 +651,39 @@ const SettingsModal = ({
               <div className="font-display font-bold text-white text-lg">{profile.name}</div>
               <div className="text-sm text-slate-300 font-sans capitalize">{profile.type} Profile</div>
             </div>
+          </motion.div>
+
+          {/* Dark Mode Toggle */}
+          <motion.div
+            className="flex items-center justify-between p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{darkMode ? "🌙" : "☀️"}</span>
+              <div>
+                <div className="font-sans font-semibold text-white">Dark Mode</div>
+                <div className="text-sm text-slate-300 font-sans">Switch between light and dark theme</div>
+              </div>
+            </div>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className={cn(
+                "relative w-14 h-8 rounded-full transition-colors duration-300",
+                darkMode ? "bg-electric-500" : "bg-white/20"
+              )}
+              aria-label="Toggle dark mode"
+            >
+              <motion.div
+                className="absolute top-1 w-6 h-6 rounded-full bg-white shadow-lg"
+                initial={false}
+                animate={{
+                  x: darkMode ? 30 : 4
+                }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            </button>
           </motion.div>
 
           {/* Completion Goal Slider */}
@@ -948,6 +1005,7 @@ export default function FocusFlow() {
         workingHours: { start: "06:00", end: "22:00" },
         breakReminders: true,
         weeklyGoal: 35,
+        darkMode: false,
       },
     };
     if (!validateProfile(newProfile)) {
@@ -1212,6 +1270,7 @@ export default function FocusFlow() {
   const profiles: Profile[] = appData?.profiles ? Object.values(appData.profiles) : [];
   const currentProfileId = appData?.settings?.currentProfile;
   const currentProfile = currentProfileId ? appData?.profiles?.[currentProfileId] : null;
+  const darkMode = currentProfile?.preferences?.darkMode || false;
 
   // --- Accessibility: Focus trap for modal ---
   const modalRef = useRef<HTMLDivElement>(null);
@@ -1393,7 +1452,7 @@ export default function FocusFlow() {
                             ease: "easeInOut"
                           }}
                         />
-                        <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/50">
+                        <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20">
                           <div className="aspect-square flex items-center justify-center">
                             {/* Simulated progress ring */}
                             <svg className="w-full h-full -rotate-90" viewBox="0 0 200 200">
@@ -1727,8 +1786,16 @@ export default function FocusFlow() {
           // --- Main Dashboard ---
           <main className="w-full max-w-2xl mx-auto flex-1 flex flex-col items-center px-4 pb-2 relative">
             {/* Background atmosphere */}
-            <div className="fixed inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 -z-10" aria-hidden="true" />
-            <div className="fixed inset-0 bg-mesh-gradient opacity-20 -z-10" aria-hidden="true" />
+            <div className={cn(
+              "fixed inset-0 bg-gradient-to-br -z-10",
+              darkMode
+                ? "from-slate-950 via-ocean-950 to-slate-900"
+                : "from-slate-50 via-blue-50/30 to-purple-50/20"
+            )} aria-hidden="true" />
+            <div className={cn(
+              "fixed inset-0 bg-mesh-gradient -z-10",
+              darkMode ? "opacity-30" : "opacity-20"
+            )} aria-hidden="true" />
 
             {/* Top Bar */}
             <motion.div
@@ -1759,11 +1826,11 @@ export default function FocusFlow() {
                     {currentProfile.avatar}
                   </AvatarFallback>
                 </Avatar>
-                <span className="font-sans font-semibold text-slate-900 text-base truncate max-w-[140px]">{currentProfile.name}</span>
+                <span className={cn("font-sans font-semibold text-base truncate max-w-[140px]", darkMode ? "text-white" : "text-slate-900")}>{currentProfile.name}</span>
               </div>
               <div className="flex-1 flex flex-col items-center">
-                <span className="font-display text-sm font-semibold text-slate-800">{getTodayDate()}</span>
-                <span className="font-sans text-xs text-slate-500 uppercase tracking-wide">{getDayOfWeek(getTodayDate())}</span>
+                <span className={cn("font-display text-sm font-semibold", darkMode ? "text-white" : "text-slate-800")}>{getTodayDate()}</span>
+                <span className={cn("font-sans text-xs uppercase tracking-wide", darkMode ? "text-slate-300" : "text-slate-500")}>{getDayOfWeek(getTodayDate())}</span>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -1775,13 +1842,16 @@ export default function FocusFlow() {
                     <span className="text-lg">⇄</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className={cn(darkMode && "bg-slate-900/95 backdrop-blur-xl border-white/20 rounded-2xl")}>
                   {profiles.map((profile: Profile) => (
                     <button
                       key={profile.id}
                       className={cn(
                         "flex flex-row items-center w-full px-2 py-2 rounded-lg",
-                        currentProfileId === profile.id ? "bg-primary/10" : "hover:bg-slate-100"
+                        darkMode ? "text-white" : "",
+                        currentProfileId === profile.id
+                          ? darkMode ? "bg-electric-500/20" : "bg-primary/10"
+                          : darkMode ? "hover:bg-white/10" : "hover:bg-slate-100"
                       )}
                       onClick={() => handleProfileSwitch(profile.id)}
                       aria-label={`Switch to profile ${profile.name}`}
@@ -1790,9 +1860,14 @@ export default function FocusFlow() {
                       <span className="text-sm">{profile.name}</span>
                     </button>
                   ))}
-                  <div className="border-t border-slate-100 my-1" />
+                  <div className={cn("border-t my-1", darkMode ? "border-white/10" : "border-slate-100")} />
                   <button
-                    className="w-full text-left px-2 py-2 text-primary hover:bg-primary/10 rounded-lg"
+                    className={cn(
+                      "w-full text-left px-2 py-2 rounded-lg font-medium",
+                      darkMode
+                        ? "text-electric-400 hover:bg-electric-500/20"
+                        : "text-primary hover:bg-primary/10"
+                    )}
                     onClick={() => setShowCreateModal(true)}
                   >
                     + Create New Profile
@@ -1818,7 +1893,12 @@ export default function FocusFlow() {
               </div>
 
               {/* Glass card container */}
-              <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50">
+              <div className={cn(
+                "relative backdrop-blur-xl rounded-3xl p-6 shadow-xl",
+                darkMode
+                  ? "bg-white/10 border border-white/20"
+                  : "bg-white/80 border border-white/20"
+              )}>
                 <ProgressRing
                   size={180}
                   animate
@@ -1859,7 +1939,7 @@ export default function FocusFlow() {
                       : []),
                   ]}
                 >
-                  <span className="text-5xl font-display font-bold text-slate-900">
+                  <span className={cn("text-5xl font-display font-bold", darkMode ? "text-white" : "text-slate-900")}>
                     {getCompletionRate(currentProfile)}%
                   </span>
                   <span className="text-sm font-sans text-coral-500 font-semibold flex items-center mt-2" aria-label="Current streak">
@@ -1882,7 +1962,7 @@ export default function FocusFlow() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <WeeklyOverview dailyRecords={currentProfile.dailyRecords || {}} />
+              <WeeklyOverview dailyRecords={currentProfile.dailyRecords || {}} darkMode={darkMode} />
             </motion.div>
             {/* Monthly Heatmap */}
             <motion.div
@@ -1913,26 +1993,32 @@ export default function FocusFlow() {
                 }
                 month={new Date().getUTCMonth()}
                 year={new Date().getUTCFullYear()}
+                darkMode={darkMode}
               />
             </motion.div>
             {/* Today's Focus Section */}
             <motion.div
-              className="w-full flex flex-row items-center justify-between mt-6 mb-4 px-2 bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white/50 shadow-sm"
+              className={cn(
+                "w-full flex flex-row items-center justify-between mt-6 mb-4 px-2 backdrop-blur-sm rounded-2xl p-4 shadow-sm",
+                darkMode
+                  ? "bg-white/10 border border-white/20"
+                  : "bg-white/60 border border-white/50"
+              )}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
             >
               <div className="flex flex-col items-start">
-                <span className="font-sans text-xs text-slate-500 uppercase tracking-wide">Date</span>
-                <span className="font-display text-base font-bold text-slate-800">{getTodayDate()}</span>
+                <span className={cn("font-sans text-xs uppercase tracking-wide", darkMode ? "text-slate-300" : "text-slate-500")}>Date</span>
+                <span className={cn("font-display text-base font-bold", darkMode ? "text-white" : "text-slate-800")}>{getTodayDate()}</span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="font-sans text-xs text-coral-500 uppercase tracking-wide">🔥 Streak</span>
-                <span className="font-display text-2xl font-bold text-coral-500">{getCurrentStreak(currentProfile)}<span className="text-sm">d</span></span>
+                <span className={cn("font-sans text-xs uppercase tracking-wide", darkMode ? "text-coral-400" : "text-coral-500")}>🔥 Streak</span>
+                <span className={cn("font-display text-2xl font-bold", darkMode ? "text-coral-400" : "text-coral-500")}>{getCurrentStreak(currentProfile)}<span className="text-sm">d</span></span>
               </div>
               <div className="flex flex-col items-end">
-                <span className="font-sans text-xs text-electric-600 uppercase tracking-wide">Progress</span>
-                <span className="font-display text-2xl font-bold text-electric-600">
+                <span className={cn("font-sans text-xs uppercase tracking-wide", darkMode ? "text-electric-400" : "text-electric-600")}>Progress</span>
+                <span className={cn("font-display text-2xl font-bold", darkMode ? "text-electric-400" : "text-electric-600")}>
                   {getCompletionRate(currentProfile)}<span className="text-sm">%</span>
                 </span>
               </div>
@@ -1945,7 +2031,7 @@ export default function FocusFlow() {
               transition={{ duration: 0.4, delay: 0.6 }}
             >
               <motion.h3
-                className="text-2xl font-display font-bold text-slate-900 mb-4 px-2"
+                className={cn("text-2xl font-display font-bold mb-4 px-2", darkMode ? "text-white" : "text-slate-900")}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.7 }}
@@ -1979,6 +2065,7 @@ export default function FocusFlow() {
                                     onEdit={() => handleEditActivity(activity)}
                                     onDelete={() => setDeleteConfirmId(activity.id)}
                                     dragHandleProps={draggableProvided.dragHandleProps}
+                                    darkMode={darkMode}
                                   />
                                 </div>
                               )}
@@ -2003,7 +2090,7 @@ export default function FocusFlow() {
               </DragDropContext>
               {/* Add Activity Floating Button */}
               <Button
-                className="fixed bottom-24 right-6 z-40 rounded-full w-16 h-16 bg-gradient-to-br from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white text-4xl flex items-center justify-center shadow-2xl transition-all duration-300 border-2 border-white/50 hover:scale-110 active:scale-95"
+                className="fixed bottom-24 right-6 z-40 rounded-full w-16 h-16 bg-gradient-to-br from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white text-4xl flex items-center justify-center shadow-2xl transition-all duration-300 border-2 border-white/20 hover:scale-110 active:scale-95"
                 style={{
                   boxShadow: "0 8px 24px rgba(6,182,212,0.35), 0 0 0 0 rgba(6,182,212,0.5)",
                 }}
@@ -2014,10 +2101,20 @@ export default function FocusFlow() {
               </Button>
             </motion.div>
             {/* Bottom Navigation - Frosted Glass */}
-            <nav className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-2xl border-t border-white/50 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] flex flex-row items-center justify-around py-3 z-30">
+            <nav className={cn(
+              "fixed bottom-0 left-0 w-full backdrop-blur-2xl border-t flex flex-row items-center justify-around py-3 z-30",
+              darkMode
+                ? "bg-slate-900/80 border-white/10 shadow-[0_-4px_16px_rgba(0,0,0,0.3)]"
+                : "bg-white/80 border-white/50 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]"
+            )}>
               <Button
                 variant="ghost"
-                className="flex flex-col items-center px-4 py-2 text-electric-600 hover:bg-electric-50/80 rounded-2xl transition-all duration-200 group"
+                className={cn(
+                  "flex flex-col items-center px-4 py-2 rounded-2xl transition-all duration-200 group",
+                  darkMode
+                    ? "text-electric-400 hover:bg-electric-500/20"
+                    : "text-electric-600 hover:bg-electric-50/80"
+                )}
                 aria-label="Analytics"
                 onClick={() => setShowAnalytics(true)}
               >
@@ -2026,7 +2123,12 @@ export default function FocusFlow() {
               </Button>
               <Button
                 variant="ghost"
-                className="flex flex-col items-center px-4 py-2 text-coral-500 hover:bg-coral-50/80 rounded-2xl transition-all duration-200 group"
+                className={cn(
+                  "flex flex-col items-center px-4 py-2 rounded-2xl transition-all duration-200 group",
+                  darkMode
+                    ? "text-coral-400 hover:bg-coral-500/20"
+                    : "text-coral-500 hover:bg-coral-50/80"
+                )}
                 aria-label="Share"
                 onClick={() => setShowShare(true)}
               >
@@ -2035,7 +2137,12 @@ export default function FocusFlow() {
               </Button>
               <Button
                 variant="ghost"
-                className="flex flex-col items-center px-4 py-2 text-ocean-600 hover:bg-ocean-50/80 rounded-2xl transition-all duration-200 group"
+                className={cn(
+                  "flex flex-col items-center px-4 py-2 rounded-2xl transition-all duration-200 group",
+                  darkMode
+                    ? "text-ocean-400 hover:bg-ocean-500/20"
+                    : "text-ocean-600 hover:bg-ocean-50/80"
+                )}
                 aria-label="Settings"
                 onClick={() => setShowSettings(true)}
               >
@@ -2345,7 +2452,7 @@ export default function FocusFlow() {
                         "w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-200",
                         activityForm?.color === color
                           ? "border-electric-400 ring-4 ring-electric-400/30 scale-110"
-                          : "border-white/30 hover:border-white/50 hover:scale-105"
+                          : "border-white/30 hover:border-white/20 hover:scale-105"
                       )}
                       style={{ background: color }}
                       onClick={() => setActivityForm((f: any) => ({ ...f, color }))}

@@ -40,12 +40,14 @@ interface WeeklyOverviewProps {
   dailyRecords: Record<string, any>;
   weekOffset?: number; // 0 = current, -1 = prev, +1 = next
   onDayClick?: (date: string) => void;
+  darkMode?: boolean;
 }
 
 export const WeeklyOverview: React.FC<WeeklyOverviewProps> = ({
   dailyRecords,
   weekOffset = 0,
   onDayClick,
+  darkMode = false,
 }) => {
   const [detailDay, setDetailDay] = useState<string | null>(null);
 
@@ -55,10 +57,23 @@ export const WeeklyOverview: React.FC<WeeklyOverviewProps> = ({
   base.setDate(today.getDate() + (weekOffset * 7));
   const weekDates = useMemo(() => getWeekDates(base), [base]);
 
+  // Color function based on dark mode
+  const getColorByCompletionWithMode = (pct: number | undefined) => {
+    if (darkMode) {
+      if (pct === undefined || pct === null) return "bg-white/10 text-slate-400 border border-white/20";
+      if (pct >= 80) return "bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-md shadow-green-500/30 border border-green-300";
+      if (pct >= 50) return "bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-amber-500/30 border border-amber-300";
+      if (pct > 0) return "bg-gradient-to-br from-coral-400 to-coral-500 text-white shadow-md shadow-coral-500/30 border border-coral-300";
+      return "bg-white/10 text-slate-400 border border-white/20";
+    } else {
+      return getColorByCompletion(pct);
+    }
+  };
+
   return (
     <div className="w-full flex flex-col items-center">
       <div className="flex flex-row items-center justify-between w-full mb-3">
-        <span className="text-lg font-display font-bold text-slate-900">This Week</span>
+        <span className={cn("text-lg font-display font-bold", darkMode ? "text-white" : "text-slate-900")}>This Week</span>
         {/* Week navigation (future: add prev/next) */}
       </div>
       <div className="grid grid-cols-7 gap-2.5 w-full">
@@ -72,7 +87,7 @@ export const WeeklyOverview: React.FC<WeeklyOverviewProps> = ({
               key={key}
               className={cn(
                 "flex flex-col items-center justify-center rounded-2xl px-2 py-2 transition-all duration-300 focus:outline-none backdrop-blur-sm",
-                getColorByCompletion(pct),
+                getColorByCompletionWithMode(pct),
                 isToday && "ring-2 ring-electric-500 shadow-lg shadow-electric-500/30"
               )}
               style={{ minWidth: 42, minHeight: 56 }}

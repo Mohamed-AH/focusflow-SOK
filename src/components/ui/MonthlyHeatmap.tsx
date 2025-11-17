@@ -11,6 +11,7 @@ interface MonthlyHeatmapProps {
   dailyRecords: DailyRecord[];
   month: number; // 0-11
   year: number;
+  darkMode?: boolean;
 }
 
 function getDaysInMonth(year: number, month: number) {
@@ -24,12 +25,20 @@ function getFirstDayOfWeek(year: number, month: number) {
   return new Date(Date.UTC(year, month, 1)).getUTCDay(); // 0 (Sun) - 6 (Sat)
 }
 
-function getColor(completion: number | null) {
-  if (completion === null) return "bg-muted";
-  if (completion >= 80) return "bg-green-500";
-  if (completion >= 50) return "bg-yellow-400";
-  if (completion > 0) return "bg-red-400";
-  return "bg-muted";
+function getColor(completion: number | null, darkMode: boolean = false) {
+  if (darkMode) {
+    if (completion === null) return "bg-white/10";
+    if (completion >= 80) return "bg-green-500";
+    if (completion >= 50) return "bg-yellow-400";
+    if (completion > 0) return "bg-red-400";
+    return "bg-white/10";
+  } else {
+    if (completion === null) return "bg-muted";
+    if (completion >= 80) return "bg-green-500";
+    if (completion >= 50) return "bg-yellow-400";
+    if (completion > 0) return "bg-red-400";
+    return "bg-muted";
+  }
 }
 
 function getTodayISO() {
@@ -42,6 +51,7 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
   dailyRecords,
   month,
   year,
+  darkMode = false,
 }) => {
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfWeek = getFirstDayOfWeek(year, month);
@@ -89,9 +99,9 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg font-semibold">Monthly Progress</h3>
+        <h3 className={`text-lg font-display font-bold ${darkMode ? "text-white" : "text-slate-900"}`}>Monthly Progress</h3>
         {/* Month/Year label */}
-        <span className="text-muted-foreground text-sm">
+        <span className={`text-sm font-sans ${darkMode ? "text-slate-300" : "text-slate-600"}`}>
           {new Date(Date.UTC(year, month)).toLocaleString(undefined, {
             month: "long",
             year: "numeric",
@@ -99,12 +109,12 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
           })}
         </span>
       </div>
-      <div className="grid grid-cols-7 gap-1 bg-card p-2 rounded-lg shadow-sm">
+      <div className={`grid grid-cols-7 gap-1 p-2 rounded-lg shadow-sm ${darkMode ? "bg-white/10 backdrop-blur-sm border border-white/20" : "bg-card"}`}>
         {/* Weekday headers */}
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d, idx) => (
           <div
             key={`weekday-${idx}`}
-            className="text-xs text-muted-foreground text-center font-medium pb-1"
+            className={`text-xs text-center font-medium pb-1 ${darkMode ? "text-slate-300" : "text-muted-foreground"}`}
           >
             {d[0]}
           </div>
@@ -114,9 +124,9 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
           cell.date ? (
             <button
               key={cell.date}
-              className={`aspect-square w-8 rounded-md flex flex-col items-center justify-center transition-all
-                ${cell.isFuture ? "bg-muted" : getColor(cell.completion)}
-                ${cell.date === todayISO ? "ring-2 ring-primary" : ""}
+              className={`aspect-square w-8 rounded-md flex flex-col items-center justify-center transition-all text-white
+                ${cell.isFuture ? (darkMode ? "bg-white/5" : "bg-muted") : getColor(cell.completion, darkMode)}
+                ${cell.date === todayISO ? `ring-2 ${darkMode ? "ring-electric-500" : "ring-primary"}` : ""}
                 hover:brightness-110 focus:outline-none`}
               title={
                 cell.completion !== null
@@ -125,7 +135,7 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
               }
               // TODO: onClick: open modal with day details
             >
-              <span className="text-[10px] font-medium leading-none">
+              <span className="text-[10px] font-medium leading-none font-display">
                 {new Date(cell.date).getUTCDate()}
               </span>
               <span className="text-xs">
@@ -137,7 +147,7 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
           )
         )}
       </div>
-      <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+      <div className={`mt-2 flex justify-between text-xs font-sans ${darkMode ? "text-slate-300" : "text-muted-foreground"}`}>
         <span>Low</span>
         <span>High</span>
       </div>
