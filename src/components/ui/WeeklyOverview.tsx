@@ -21,11 +21,11 @@ function getDayKey(date: Date) {
 }
 
 function getColorByCompletion(pct: number | undefined) {
-  if (pct === undefined || pct === null) return "bg-white/10 text-slate-400 border border-white/20";
+  if (pct === undefined || pct === null) return "bg-slate-200/50 text-slate-500 border border-slate-200";
   if (pct >= 80) return "bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-md shadow-green-500/30 border border-green-300";
   if (pct >= 50) return "bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-amber-500/30 border border-amber-300";
   if (pct > 0) return "bg-gradient-to-br from-coral-400 to-coral-500 text-white shadow-md shadow-coral-500/30 border border-coral-300";
-  return "bg-white/10 text-slate-400 border border-white/20";
+  return "bg-slate-200/50 text-slate-500 border border-slate-200";
 }
 
 function getMoodEmoji(pct: number | undefined) {
@@ -58,7 +58,7 @@ export const WeeklyOverview: React.FC<WeeklyOverviewProps> = ({
   return (
     <div className="w-full flex flex-col items-center">
       <div className="flex flex-row items-center justify-between w-full mb-3">
-        <span className="text-lg font-display font-bold text-white">This Week</span>
+        <span className="text-lg font-display font-bold text-slate-900">This Week</span>
         {/* Week navigation (future: add prev/next) */}
       </div>
       <div className="grid grid-cols-7 gap-2.5 w-full">
