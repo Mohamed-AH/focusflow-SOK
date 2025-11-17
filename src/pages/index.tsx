@@ -605,6 +605,14 @@ const SettingsModal = ({
   const [completionGoal, setCompletionGoal] = React.useState(profile.preferences.completionGoal);
   const [darkMode, setDarkMode] = React.useState(profile.preferences.darkMode || false);
 
+  // Sync state when profile changes or modal opens
+  React.useEffect(() => {
+    if (profile && isOpen) {
+      setCompletionGoal(profile.preferences.completionGoal);
+      setDarkMode(profile.preferences.darkMode || false);
+    }
+  }, [profile, isOpen]);
+
   const handleSave = () => {
     onUpdateProfile({
       preferences: {
@@ -942,6 +950,17 @@ export default function FocusFlow() {
       if (!validateAppData(data)) {
         data = getInitialData();
       }
+
+      // Migration: Add darkMode to existing profiles if missing
+      if (data && data.profiles) {
+        Object.keys(data.profiles).forEach(profileId => {
+          const profile = data.profiles[profileId];
+          if (profile.preferences && profile.preferences.darkMode === undefined) {
+            profile.preferences.darkMode = false;
+          }
+        });
+      }
+
       setAppData(data);
     } catch (e: any) {
       setAppData(getInitialData());
@@ -1271,6 +1290,11 @@ export default function FocusFlow() {
   const currentProfileId = appData?.settings?.currentProfile;
   const currentProfile = currentProfileId ? appData?.profiles?.[currentProfileId] : null;
   const darkMode = currentProfile?.preferences?.darkMode || false;
+
+  // Debug: Log dark mode state
+  React.useEffect(() => {
+    console.log('Dark Mode:', darkMode, 'Profile preferences:', currentProfile?.preferences);
+  }, [darkMode, currentProfile?.preferences]);
 
   // --- Accessibility: Focus trap for modal ---
   const modalRef = useRef<HTMLDivElement>(null);
