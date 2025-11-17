@@ -578,11 +578,12 @@ const ActivityCard = ({
 // --- Analytics Modal Component ---
 const AnalyticsModal = ({ isOpen, onClose, profile }: { isOpen: boolean; onClose: () => void; profile: Profile | null }) => {
   if (!profile) return null;
+  const darkMode = profile.preferences?.darkMode || false;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[98vw] sm:max-w-[95vw] w-full h-[95vh] sm:h-[90vh] p-0 overflow-hidden gap-0 bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900 border-0 shadow-2xl rounded-3xl">
-        <DashboardLayout profile={profile} onClose={onClose} />
+        <DashboardLayout profile={profile} onClose={onClose} darkMode={darkMode} />
       </DialogContent>
     </Dialog>
   );

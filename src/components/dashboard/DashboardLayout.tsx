@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
 import {
   BarChart3,
   TrendingUp,
@@ -82,17 +83,19 @@ interface Profile {
     workingHours: { start: string; end: string };
     breakReminders: boolean;
     weeklyGoal: number;
+    darkMode?: boolean;
   };
 }
 
 interface DashboardLayoutProps {
   profile: Profile;
   onClose?: () => void;
+  darkMode?: boolean;
 }
 
 export type DateRange = '7days' | '30days' | '90days' | 'custom';
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ profile, onClose }) => {
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ profile, onClose, darkMode = false }) => {
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [dateRange, setDateRange] = useState<DateRange>('7days');
   const [customStartDate, setCustomStartDate] = useState<string>('');
@@ -221,23 +224,41 @@ ${getRangeLabel()}
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-background relative">
+    <div className={cn(
+      "w-full h-full flex flex-col relative",
+      darkMode ? "bg-slate-900" : "bg-background"
+    )}>
       {/* Header */}
-      <div className="border-b bg-card flex-shrink-0">
+      <div className={cn(
+        "border-b flex-shrink-0",
+        darkMode ? "bg-slate-800 border-slate-700" : "bg-card border-border"
+      )}>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between px-3 md:px-6 py-3 md:py-4 gap-3">
           <div className="flex-shrink-0">
-            <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+            <h2 className={cn(
+              "text-xl md:text-2xl font-bold flex items-center gap-2",
+              darkMode ? "text-white" : "text-foreground"
+            )}>
+              <BarChart3 className={cn(
+                "h-5 w-5 md:h-6 md:w-6",
+                darkMode ? "text-electric-400" : "text-primary"
+              )} />
               <span className="truncate">Analytics Dashboard</span>
             </h2>
-            <p className="text-xs md:text-sm text-muted-foreground mt-1 truncate">
+            <p className={cn(
+              "text-xs md:text-sm mt-1 truncate",
+              darkMode ? "text-slate-300" : "text-muted-foreground"
+            )}>
               {profile.avatar} {profile.name} • {getRangeLabel()}
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             {/* Date Range Selector */}
-            <div className="flex items-center gap-1 bg-background rounded-lg border p-1">
+            <div className={cn(
+              "flex items-center gap-1 rounded-lg border p-1",
+              darkMode ? "bg-slate-900 border-slate-700" : "bg-background border-border"
+            )}>
               <Button
                 variant={dateRange === '7days' ? 'default' : 'ghost'}
                 size="sm"
@@ -314,11 +335,19 @@ ${getRangeLabel()}
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
         {/* Tab Navigation */}
-        <div className="border-b bg-card px-3 md:px-6 flex-shrink-0">
+        <div className={cn(
+          "border-b px-3 md:px-6 flex-shrink-0",
+          darkMode ? "bg-slate-800 border-slate-700" : "bg-card border-border"
+        )}>
           <TabsList className="bg-transparent border-b-0 w-full justify-start">
             <TabsTrigger
               value="overview"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none text-xs md:text-sm flex-1 sm:flex-none"
+              className={cn(
+                "data-[state=active]:border-b-2 rounded-none text-xs md:text-sm flex-1 sm:flex-none",
+                darkMode
+                  ? "data-[state=active]:border-electric-400 data-[state=active]:text-electric-400 text-slate-300"
+                  : "data-[state=active]:border-primary data-[state=active]:text-primary"
+              )}
             >
               <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
               <span className="hidden sm:inline">Overview</span>
@@ -326,7 +355,12 @@ ${getRangeLabel()}
             </TabsTrigger>
             <TabsTrigger
               value="activities"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none text-xs md:text-sm flex-1 sm:flex-none"
+              className={cn(
+                "data-[state=active]:border-b-2 rounded-none text-xs md:text-sm flex-1 sm:flex-none",
+                darkMode
+                  ? "data-[state=active]:border-electric-400 data-[state=active]:text-electric-400 text-slate-300"
+                  : "data-[state=active]:border-primary data-[state=active]:text-primary"
+              )}
             >
               <Activity className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
               <span className="hidden sm:inline">Activities</span>
@@ -334,7 +368,12 @@ ${getRangeLabel()}
             </TabsTrigger>
             <TabsTrigger
               value="trends"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none text-xs md:text-sm flex-1 sm:flex-none"
+              className={cn(
+                "data-[state=active]:border-b-2 rounded-none text-xs md:text-sm flex-1 sm:flex-none",
+                darkMode
+                  ? "data-[state=active]:border-electric-400 data-[state=active]:text-electric-400 text-slate-300"
+                  : "data-[state=active]:border-primary data-[state=active]:text-primary"
+              )}
             >
               <BarChart3 className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
               <span className="hidden sm:inline">Trends</span>
@@ -349,21 +388,21 @@ ${getRangeLabel()}
             {/* Overview Tab */}
             <TabsContent value="overview" className="h-full mt-0 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="p-3 md:p-6">
-                <OverviewTab profile={profile} days={getDaysFromRange()} />
+                <OverviewTab profile={profile} days={getDaysFromRange()} darkMode={darkMode} />
               </div>
             </TabsContent>
 
             {/* Activities Tab */}
             <TabsContent value="activities" className="h-full mt-0 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="p-3 md:p-6">
-                <ActivitiesTab profile={profile} days={getDaysFromRange()} />
+                <ActivitiesTab profile={profile} days={getDaysFromRange()} darkMode={darkMode} />
               </div>
             </TabsContent>
 
             {/* Trends Tab */}
             <TabsContent value="trends" className="h-full mt-0 overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="p-3 md:p-6">
-                <TrendsTab profile={profile} days={getDaysFromRange()} />
+                <TrendsTab profile={profile} days={getDaysFromRange()} darkMode={darkMode} />
               </div>
             </TabsContent>
           </div>
@@ -375,11 +414,11 @@ ${getRangeLabel()}
 
 // --- Tab Components ---
 
-const OverviewTab: React.FC<{ profile: Profile; days: number }> = ({ profile, days }) => {
+const OverviewTab: React.FC<{ profile: Profile; days: number; darkMode?: boolean }> = ({ profile, days, darkMode = false }) => {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Key Metrics Cards */}
-      <StatsGrid profile={profile} days={days} />
+      <StatsGrid profile={profile} days={days} darkMode={darkMode} />
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
@@ -390,7 +429,7 @@ const OverviewTab: React.FC<{ profile: Profile; days: number }> = ({ profile, da
   );
 };
 
-const ActivitiesTab: React.FC<{ profile: Profile; days: number }> = ({ profile, days }) => {
+const ActivitiesTab: React.FC<{ profile: Profile; days: number; darkMode?: boolean }> = ({ profile, days, darkMode = false }) => {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Activity Leaderboard */}
@@ -405,7 +444,7 @@ const ActivitiesTab: React.FC<{ profile: Profile; days: number }> = ({ profile, 
   );
 };
 
-const TrendsTab: React.FC<{ profile: Profile; days: number }> = ({ profile, days }) => {
+const TrendsTab: React.FC<{ profile: Profile; days: number; darkMode?: boolean }> = ({ profile, days, darkMode = false }) => {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Week Comparison */}
