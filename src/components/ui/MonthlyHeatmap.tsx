@@ -124,8 +124,8 @@ export const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
           cell.date ? (
             <button
               key={cell.date}
-              className={`aspect-square w-8 rounded-md flex flex-col items-center justify-center transition-all text-white
-                ${cell.isFuture ? (darkMode ? "bg-white/5" : "bg-muted") : getColor(cell.completion, darkMode)}
+              className={`aspect-square w-8 rounded-md flex flex-col items-center justify-center transition-all
+                ${cell.isFuture ? (darkMode ? "bg-white/5 text-slate-400" : "bg-muted text-slate-400") : getColor(cell.completion, darkMode) + " text-white"}
                 ${cell.date === todayISO ? `ring-2 ${darkMode ? "ring-electric-500" : "ring-primary"}` : ""}
                 hover:brightness-110 focus:outline-none`}
               title={

@@ -73,6 +73,7 @@ interface Profile {
 interface StatsGridProps {
   profile: Profile;
   days: number;
+  darkMode?: boolean;
 }
 
 interface StatCardProps {
@@ -86,6 +87,7 @@ interface StatCardProps {
     label: string;
     isPositive: boolean;
   };
+  darkMode?: boolean;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -95,17 +97,30 @@ const StatCard: React.FC<StatCardProps> = ({
   icon,
   iconColor = 'text-primary',
   trend,
+  darkMode = false,
 }) => {
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={cn(
+      "hover:shadow-md transition-shadow",
+      darkMode && "bg-slate-800 border-slate-700 text-white"
+    )}>
       <CardContent className="p-3 sm:p-4 md:p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-1 sm:space-y-2 flex-1 min-w-0">
-            <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
+            <p className={cn(
+              "text-xs sm:text-sm font-medium truncate",
+              darkMode ? "text-slate-300" : "text-muted-foreground"
+            )}>{title}</p>
             <div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">{value}</h3>
+              <h3 className={cn(
+                "text-xl sm:text-2xl md:text-3xl font-bold tracking-tight",
+                darkMode ? "text-white" : "text-foreground"
+              )}>{value}</h3>
               {subtitle && (
-                <p className="text-xs text-muted-foreground mt-1 truncate">{subtitle}</p>
+                <p className={cn(
+                  "text-xs mt-1 truncate",
+                  darkMode ? "text-slate-300" : "text-muted-foreground"
+                )}>{subtitle}</p>
               )}
             </div>
             {trend && (
@@ -125,11 +140,18 @@ const StatCard: React.FC<StatCardProps> = ({
                   {trend.value > 0 ? '+' : ''}
                   {trend.value.toFixed(0)}%
                 </span>
-                <span className="text-xs text-muted-foreground">{trend.label}</span>
+                <span className={cn(
+                  "text-xs",
+                  darkMode ? "text-slate-300" : "text-muted-foreground"
+                )}>{trend.label}</span>
               </div>
             )}
           </div>
-          <div className={cn('rounded-lg p-2 sm:p-3 bg-muted flex-shrink-0', iconColor)}>
+          <div className={cn(
+            'rounded-lg p-2 sm:p-3 flex-shrink-0',
+            darkMode ? "bg-slate-700" : "bg-muted",
+            iconColor
+          )}>
             {icon}
           </div>
         </div>
@@ -138,7 +160,7 @@ const StatCard: React.FC<StatCardProps> = ({
   );
 };
 
-export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days }) => {
+export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days, darkMode = false }) => {
   const metrics = useMemo(() => {
     return calculateKeyMetrics(profile, days);
   }, [profile, days]);
@@ -146,7 +168,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
       {/* Total Focused Time */}
-      <StatCard
+      <StatCard darkMode={darkMode}
         title="Total Focused Time"
         value={formatMinutesToHours(metrics.totalFocusedTime)}
         subtitle={`Across ${metrics.totalActivitiesCompleted} activities`}
@@ -155,7 +177,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days }) => {
       />
 
       {/* Average Completion Rate */}
-      <StatCard
+      <StatCard darkMode={darkMode}
         title="Avg Completion Rate"
         value={`${metrics.averageCompletionRate.toFixed(0)}%`}
         subtitle={`${metrics.activeDays} active days`}
@@ -164,7 +186,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days }) => {
       />
 
       {/* Current Streak */}
-      <StatCard
+      <StatCard darkMode={darkMode}
         title="Current Streak"
         value={`${metrics.currentStreak} days`}
         subtitle={`Best: ${metrics.bestStreak} days`}
@@ -173,7 +195,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days }) => {
       />
 
       {/* Perfect Days */}
-      <StatCard
+      <StatCard darkMode={darkMode}
         title="Perfect Days"
         value={metrics.perfectDays}
         subtitle="100% completion"
@@ -183,7 +205,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days }) => {
 
       {/* Most Productive Day */}
       {metrics.mostProductiveDay && (
-        <StatCard
+        <StatCard darkMode={darkMode}
           title="Most Productive Day"
           value={`${metrics.mostProductiveDay.rate.toFixed(0)}%`}
           subtitle={new Date(metrics.mostProductiveDay.date).toLocaleDateString('en-US', {
@@ -197,7 +219,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days }) => {
 
       {/* Favorite Activity */}
       {metrics.favoriteActivity && (
-        <StatCard
+        <StatCard darkMode={darkMode}
           title="Favorite Activity"
           value={
             <span className="flex items-center gap-1 sm:gap-2 text-lg sm:text-2xl">
@@ -212,7 +234,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days }) => {
       )}
 
       {/* Active Days */}
-      <StatCard
+      <StatCard darkMode={darkMode}
         title="Active Days"
         value={metrics.activeDays}
         subtitle={`Out of ${days} days`}
@@ -221,7 +243,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ profile, days }) => {
       />
 
       {/* Completion Goal Progress */}
-      <StatCard
+      <StatCard darkMode={darkMode}
         title="Goal Progress"
         value={`${metrics.averageCompletionRate >= profile.preferences.completionGoal ? '✓' : '○'}`}
         subtitle={`Target: ${profile.preferences.completionGoal}%`}
