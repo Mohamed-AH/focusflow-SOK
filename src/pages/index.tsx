@@ -1291,11 +1291,6 @@ export default function FocusFlow() {
   const currentProfile = currentProfileId ? appData?.profiles?.[currentProfileId] : null;
   const darkMode = currentProfile?.preferences?.darkMode || false;
 
-  // Debug: Log dark mode state
-  React.useEffect(() => {
-    console.log('Dark Mode:', darkMode, 'Profile preferences:', currentProfile?.preferences);
-  }, [darkMode, currentProfile?.preferences]);
-
   // --- Accessibility: Focus trap for modal ---
   const modalRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -1316,12 +1311,14 @@ export default function FocusFlow() {
       </Head>
       <div
         className={cn(
-          "min-h-screen flex flex-col items-center justify-start bg-background",
+          "min-h-screen flex flex-col items-center justify-start",
           "font-sans",
           "transition-colors duration-300"
         )}
         style={{
-          background: `linear-gradient(120deg, #F8FAFC 60%, #E0F2FE 100%)`,
+          background: darkMode
+            ? `linear-gradient(120deg, #0f172a 0%, #1e293b 100%)`
+            : `linear-gradient(120deg, #F8FAFC 60%, #E0F2FE 100%)`,
         }}
       >
         {/* If no profile selected, show onboarding */}
