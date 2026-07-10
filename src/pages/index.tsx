@@ -1,5 +1,34 @@
 import React, { useEffect, useState, useRef } from "react";
 import Head from "next/head";
+import Link from "next/link";
+import { signIn, signOut, useSession } from "next-auth/react";
+import {
+  ArrowRight,
+  BarChart3,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  Cloud,
+  CloudOff,
+  Flame,
+  GripVertical,
+  LayoutDashboard,
+  LineChart,
+  Loader2,
+  LogIn,
+  LogOut,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Settings,
+  Share2,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  Trash2,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 
 // --- Types & Interfaces ---
 type ProfileType = "student" | "professional" | "entrepreneur" | "creative" | "mom" | "custom";
@@ -58,7 +87,6 @@ interface Profile {
 
 import { AnimatePresence, motion } from "framer-motion";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -71,31 +99,32 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { useCloudSync } from "@/hooks/useCloudSync";
 
 // --- Constants & Templates ---
 
 const COLOR_PALETTE = {
-  primary: "#3B82F6",
-  secondary: "#10B981",
-  accent: "#F59E0B",
+  primary: "#4F46E5",
+  secondary: "#0D9488",
+  accent: "#D97706",
   success: "#059669",
   warning: "#DC2626",
   background: "#F8FAFC",
   dark: "#0F172A",
-  student: "#8B5CF6",
-  professional: "#3B82F6",
-  entrepreneur: "#F59E0B",
-  creative: "#EC4899",
-  mom: "#10B981",
-  blue: "#3B82F6",
-  green: "#10B981",
-  amber: "#F59E0B",
+  student: "#7C3AED",
+  professional: "#4F46E5",
+  entrepreneur: "#D97706",
+  creative: "#E11D48",
+  mom: "#0D9488",
+  blue: "#4F46E5",
+  green: "#0D9488",
+  amber: "#D97706",
   emerald: "#059669",
   red: "#DC2626",
-  pink: "#EC4899",
-  purple: "#8B5CF6",
-  cyan: "#06B6D4",
-  orange: "#F97316",
+  pink: "#E11D48",
+  purple: "#7C3AED",
+  cyan: "#0284C7",
+  orange: "#EA580C",
 };
 
 const ACTIVITY_COLORS = [
@@ -175,7 +204,7 @@ const PROFILE_TYPES = [
   },
 ];
 
-// Emoji picker (simple, can be expanded)
+// Emoji picker for activity icons (user content, not UI chrome)
 const EMOJI_CATEGORIES = [
   {
     name: "Faces",
@@ -197,46 +226,46 @@ const EMOJI_CATEGORIES = [
 
 const ACTIVITY_TEMPLATES = {
   student: {
-    "study-sessions": { name: "Study Sessions", duration: 120, color: "#8B5CF6", icon: "📚", category: "academic" },
-    "attend-classes": { name: "Attend Classes", duration: 60, color: "#3B82F6", icon: "🎓", category: "academic" },
-    "assignments": { name: "Complete Assignments", duration: 90, color: "#10B981", icon: "✍️", category: "academic" },
-    "exercise": { name: "Exercise/Break", duration: 60, color: "#F59E0B", icon: "🏃‍♂️", category: "wellness" },
-    "personal-time": { name: "Personal Time", duration: 60, color: "#EC4899", icon: "🎮", category: "personal" },
-    "social-meals": { name: "Social/Meals", duration: 60, color: "#F97316", icon: "🍕", category: "social" }
+    "study-sessions": { name: "Study Sessions", duration: 120, color: "#7C3AED", icon: "📚", category: "academic" },
+    "attend-classes": { name: "Attend Classes", duration: 60, color: "#4F46E5", icon: "🎓", category: "academic" },
+    "assignments": { name: "Complete Assignments", duration: 90, color: "#0D9488", icon: "✍️", category: "academic" },
+    "exercise": { name: "Exercise/Break", duration: 60, color: "#D97706", icon: "🏃‍♂️", category: "wellness" },
+    "personal-time": { name: "Personal Time", duration: 60, color: "#E11D48", icon: "🎮", category: "personal" },
+    "social-meals": { name: "Social/Meals", duration: 60, color: "#EA580C", icon: "🍕", category: "social" }
   },
   professional: {
-    "deep-work": { name: "Deep Work", duration: 120, color: "#3B82F6", icon: "💻", category: "work" },
-    "meetings": { name: "Meetings", duration: 60, color: "#10B981", icon: "👥", category: "work" },
-    "email-admin": { name: "Email/Admin", duration: 30, color: "#F59E0B", icon: "📧", category: "work" },
-    "learning": { name: "Learning/Development", duration: 60, color: "#8B5CF6", icon: "📚", category: "development" },
-    "lunch": { name: "Lunch Break", duration: 60, color: "#EC4899", icon: "🍽️", category: "break" },
-    "personal-tasks": { name: "Personal Tasks", duration: 30, color: "#F97316", icon: "📝", category: "personal" }
+    "deep-work": { name: "Deep Work", duration: 120, color: "#4F46E5", icon: "💻", category: "work" },
+    "meetings": { name: "Meetings", duration: 60, color: "#0D9488", icon: "👥", category: "work" },
+    "email-admin": { name: "Email/Admin", duration: 30, color: "#D97706", icon: "📧", category: "work" },
+    "learning": { name: "Learning/Development", duration: 60, color: "#7C3AED", icon: "📚", category: "development" },
+    "lunch": { name: "Lunch Break", duration: 60, color: "#E11D48", icon: "🍽️", category: "break" },
+    "personal-tasks": { name: "Personal Tasks", duration: 30, color: "#EA580C", icon: "📝", category: "personal" }
   },
   entrepreneur: {
-    "business-dev": { name: "Business Development", duration: 120, color: "#F59E0B", icon: "📈", category: "business" },
-    "product-work": { name: "Product Work", duration: 120, color: "#3B82F6", icon: "🛠️", category: "product" },
-    "marketing": { name: "Marketing/Content", duration: 60, color: "#EC4899", icon: "📱", category: "marketing" },
-    "networking": { name: "Networking", duration: 60, color: "#10B981", icon: "🤝", category: "networking" },
-    "planning": { name: "Planning/Strategy", duration: 60, color: "#8B5CF6", icon: "🗺️", category: "strategy" },
-    "self-care": { name: "Self-Care", duration: 60, color: "#F97316", icon: "🧘‍♂️", category: "wellness" }
+    "business-dev": { name: "Business Development", duration: 120, color: "#D97706", icon: "📈", category: "business" },
+    "product-work": { name: "Product Work", duration: 120, color: "#4F46E5", icon: "🛠️", category: "product" },
+    "marketing": { name: "Marketing/Content", duration: 60, color: "#E11D48", icon: "📱", category: "marketing" },
+    "networking": { name: "Networking", duration: 60, color: "#0D9488", icon: "🤝", category: "networking" },
+    "planning": { name: "Planning/Strategy", duration: 60, color: "#7C3AED", icon: "🗺️", category: "strategy" },
+    "self-care": { name: "Self-Care", duration: 60, color: "#EA580C", icon: "🧘‍♂️", category: "wellness" }
   },
   creative: {
-    "creative-work": { name: "Creative Work", duration: 180, color: "#EC4899", icon: "🎨", category: "creative" },
-    "research": { name: "Research/Inspiration", duration: 60, color: "#8B5CF6", icon: "🔍", category: "research" },
-    "admin-tasks": { name: "Admin/Business Tasks", duration: 60, color: "#3B82F6", icon: "📊", category: "business" },
-    "skill-dev": { name: "Skill Development", duration: 60, color: "#10B981", icon: "🎯", category: "learning" },
-    "breaks": { name: "Breaks/Recharge", duration: 60, color: "#F59E0B", icon: "☕", category: "break" },
-    "life-maintenance": { name: "Life Maintenance", duration: 60, color: "#F97316", icon: "🏠", category: "personal" }
+    "creative-work": { name: "Creative Work", duration: 180, color: "#E11D48", icon: "🎨", category: "creative" },
+    "research": { name: "Research/Inspiration", duration: 60, color: "#7C3AED", icon: "🔍", category: "research" },
+    "admin-tasks": { name: "Admin/Business Tasks", duration: 60, color: "#4F46E5", icon: "📊", category: "business" },
+    "skill-dev": { name: "Skill Development", duration: 60, color: "#0D9488", icon: "🎯", category: "learning" },
+    "breaks": { name: "Breaks/Recharge", duration: 60, color: "#D97706", icon: "☕", category: "break" },
+    "life-maintenance": { name: "Life Maintenance", duration: 60, color: "#EA580C", icon: "🏠", category: "personal" }
   },
   mom: {
-    "morning-routine": { name: "Morning Routine", duration: 45, color: "#F59E0B", icon: "☀️", category: "personal" },
-    "kids-prep": { name: "Kids Prep & School", duration: 60, color: "#3B82F6", icon: "🎒", category: "family" },
-    "meal-prep": { name: "Meal Prep & Cooking", duration: 90, color: "#10B981", icon: "🍳", category: "household" },
-    "self-care": { name: "Self-Care Time", duration: 45, color: "#EC4899", icon: "💆‍♀️", category: "personal" },
-    "learning": { name: "Learning/Personal Growth", duration: 60, color: "#8B5CF6", icon: "📚", category: "development" },
-    "family-calls": { name: "Family Calls/Relatives", duration: 30, color: "#F97316", icon: "📞", category: "social" },
-    "household": { name: "Household Management", duration: 60, color: "#06B6D4", icon: "🏠", category: "household" },
-    "family-time": { name: "Evening Family Time", duration: 90, color: "#EF4444", icon: "👨‍👩‍👧‍👦", category: "family" }
+    "morning-routine": { name: "Morning Routine", duration: 45, color: "#D97706", icon: "☀️", category: "personal" },
+    "kids-prep": { name: "Kids Prep & School", duration: 60, color: "#4F46E5", icon: "🎒", category: "family" },
+    "meal-prep": { name: "Meal Prep & Cooking", duration: 90, color: "#0D9488", icon: "🍳", category: "household" },
+    "self-care": { name: "Self-Care Time", duration: 45, color: "#E11D48", icon: "💆‍♀️", category: "personal" },
+    "learning": { name: "Learning/Personal Growth", duration: 60, color: "#7C3AED", icon: "📚", category: "development" },
+    "family-calls": { name: "Family Calls/Relatives", duration: 30, color: "#EA580C", icon: "📞", category: "social" },
+    "household": { name: "Household Management", duration: 60, color: "#0284C7", icon: "🏠", category: "household" },
+    "family-time": { name: "Evening Family Time", duration: 90, color: "#DC2626", icon: "👨‍👩‍👧‍👦", category: "family" }
   }
 };
 
@@ -358,200 +387,104 @@ const ActivityCard = ({
   darkMode?: boolean;
 }) => {
   const accent = activity.color || COLOR_PALETTE.primary;
-  const [showCelebration, setShowCelebration] = React.useState(false);
-
-  // Trigger celebration when state changes to completed
-  React.useEffect(() => {
-    if (state === "completed") {
-      setShowCelebration(true);
-      const timer = setTimeout(() => setShowCelebration(false), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [state]);
-
-  // Glassmorphism styling based on state and dark mode
-  const cardStyles = darkMode ? {
-    planned: {
-      bg: "bg-white/10 backdrop-blur-xl",
-      border: "border-white/20",
-      shadow: "shadow-sm hover:shadow-md",
-      text: "text-white",
-    },
-    inprogress: {
-      bg: "bg-electric-500/20 backdrop-blur-xl",
-      border: "border-electric-400/60",
-      shadow: "shadow-lg shadow-electric-500/30",
-      text: "text-white",
-    },
-    completed: {
-      bg: "bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-xl",
-      border: "border-green-400/50",
-      shadow: "shadow-md shadow-green-500/20",
-      text: "text-green-300",
-    },
-  } : {
-    planned: {
-      bg: "bg-white/70 backdrop-blur-xl",
-      border: "border-slate-200/50",
-      shadow: "shadow-sm hover:shadow-md",
-      text: "text-slate-800",
-    },
-    inprogress: {
-      bg: "bg-electric-50/80 backdrop-blur-xl",
-      border: "border-electric-400/60",
-      shadow: "shadow-lg shadow-electric-500/20",
-      text: "text-slate-900",
-    },
-    completed: {
-      bg: "bg-gradient-to-r from-green-50/90 to-emerald-50/90 backdrop-blur-xl",
-      border: "border-green-400/50",
-      shadow: "shadow-md shadow-green-500/10",
-      text: "text-green-800",
-    },
-  };
-
-  const currentStyle = cardStyles[state];
+  const completed = state === "completed";
 
   return (
     <motion.div
       className={cn(
-        "flex flex-row items-center w-full rounded-2xl border px-4 py-4 mb-3 transition-all duration-300 group relative overflow-hidden",
-        currentStyle.bg,
-        currentStyle.border,
-        currentStyle.shadow,
-        "hover:-translate-y-0.5"
+        "group flex flex-row items-center w-full rounded-lg border px-4 py-3.5 mb-2 transition-colors",
+        darkMode
+          ? completed
+            ? "bg-ocean-800/60 border-ocean-700"
+            : "bg-ocean-800 border-ocean-700 hover:border-ocean-600"
+          : completed
+            ? "bg-slate-50 border-slate-200"
+            : "bg-white border-slate-200 hover:border-slate-300 shadow-sm"
       )}
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 16 }}
+      exit={{ opacity: 0, y: 8 }}
       layout
       tabIndex={0}
       aria-label={`Activity: ${activity.name}`}
       onDoubleClick={onEdit}
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
       onContextMenu={e => {
         e.preventDefault();
         if (onEdit) onEdit();
       }}
     >
-      {/* Gradient accent bar on left */}
+      {/* Accent bar */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
-        style={{
-          background: `linear-gradient(to bottom, ${accent}, ${accent}aa)`,
-          boxShadow: state === "inprogress" ? `0 0 12px ${accent}60` : "none",
-        }}
+        className="w-1 self-stretch rounded-full mr-3 shrink-0"
+        style={{ background: accent, opacity: completed ? 0.35 : 1 }}
         aria-hidden="true"
       />
 
-      {/* Celebration particles */}
-      <AnimatePresence>
-        {showCelebration && (
-          <>
-            {[...Array(8)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-2 h-2 rounded-full"
-                style={{
-                  background: i % 2 === 0 ? "#22d3ee" : "#ff6b6b",
-                  left: "50%",
-                  top: "50%",
-                }}
-                initial={{ scale: 0, x: 0, y: 0, opacity: 1 }}
-                animate={{
-                  scale: [0, 1, 0.5],
-                  x: Math.cos((i * Math.PI) / 4) * 60,
-                  y: Math.sin((i * Math.PI) / 4) * 60,
-                  opacity: [1, 1, 0],
-                }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  duration: 0.6,
-                  ease: "easeOut",
-                }}
-              />
-            ))}
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Left: Checkbox */}
+      {/* Checkbox */}
       <button
         className={cn(
-          "w-9 h-9 flex items-center justify-center rounded-full border-2 ml-2 mr-4 transition-all duration-300",
-          state === "completed"
-            ? "border-green-500 bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-lg shadow-green-500/30"
-            : "border-slate-300 bg-white/80 text-slate-400 hover:border-electric-500 hover:bg-electric-50 focus:ring-2 focus:ring-electric-400"
+          "w-6 h-6 flex items-center justify-center rounded-md border mr-3 shrink-0 transition-colors",
+          completed
+            ? "border-electric-600 bg-electric-600 text-white"
+            : darkMode
+              ? "border-ocean-500 bg-transparent hover:border-electric-400"
+              : "border-slate-300 bg-white hover:border-electric-500"
         )}
-        aria-label={state === "completed" ? "Mark as incomplete" : "Mark as complete"}
+        aria-label={completed ? "Mark as incomplete" : "Mark as complete"}
         onClick={onCheck}
         tabIndex={0}
       >
-        {state === "completed" ? (
-          <motion.span
-            initial={{ scale: 0.5, rotate: -45, opacity: 0 }}
-            animate={{ scale: 1, rotate: 0, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 15 }}
-            className="text-lg font-bold"
-          >
-            ✓
-          </motion.span>
-        ) : (
-          <span className="text-lg"> </span>
-        )}
+        {completed && <Check className="w-4 h-4" strokeWidth={3} />}
       </button>
 
-      {/* Center: Name, duration, category */}
-      <div className="flex-1 flex flex-col min-w-0" onClick={onEdit} style={{ cursor: "pointer" }}>
-        <span className={cn("text-lg font-sans font-semibold truncate", currentStyle.text)}>
+      {/* Name, duration, category */}
+      <div className="flex-1 flex flex-col min-w-0 cursor-pointer" onClick={onEdit}>
+        <span
+          className={cn(
+            "text-sm font-medium truncate",
+            completed
+              ? darkMode ? "text-ocean-400 line-through" : "text-slate-400 line-through"
+              : darkMode ? "text-white" : "text-slate-900"
+          )}
+        >
           {activity.name}
         </span>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="font-display text-sm text-electric-400 dark:text-electric-400 font-semibold">
-            {activity.duration}
-          </span>
-          <span className="font-sans text-xs text-slate-500">min</span>
-          <span className="text-slate-300">•</span>
-          <span className="font-sans text-xs text-slate-600 bg-white/60 px-2 py-0.5 rounded-full">
-            {activity.category}
-          </span>
+        <div className={cn("flex items-center gap-2 mt-0.5 text-xs", darkMode ? "text-ocean-400" : "text-slate-500")}>
+          <span className="tabular-nums">{activity.duration} min</span>
+          <span aria-hidden="true">·</span>
+          <span className="capitalize">{activity.category}</span>
           {activity.startTime && (
             <>
-              <span className="text-slate-300">•</span>
-              <span className="font-sans text-xs text-slate-600">
-                {formatTime(activity.startTime)}
-              </span>
+              <span aria-hidden="true">·</span>
+              <span className="tabular-nums">{formatTime(activity.startTime)}</span>
             </>
           )}
         </div>
-        {/* Progress bar */}
-        {state !== "planned" && (
-          <div className="w-full h-1 bg-slate-200/50 rounded-full mt-2 overflow-hidden">
-            <motion.div
-              className="h-1 rounded-full"
-              style={{
-                background: state === "completed"
-                  ? "linear-gradient(to right, #22c55e, #10b981)"
-                  : `linear-gradient(to right, ${accent}, ${accent}cc)`,
-              }}
-              initial={{ width: 0 }}
-              animate={{
-                width: state === "completed" ? "100%" : state === "inprogress" ? "50%" : "0%",
-              }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            />
-          </div>
-        )}
       </div>
 
-      {/* Right: Emoji, actions */}
-      <div className="flex flex-row items-center ml-4 gap-2">
-        <span className="text-3xl" aria-label="Activity icon">{activity.icon}</span>
-
-        <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      {/* Icon + hover actions */}
+      <div className="flex flex-row items-center gap-1 ml-3">
+        <span className="text-xl mr-1" aria-label="Activity icon">{activity.icon}</span>
+        <div className="flex flex-row items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
           <button
-            className="text-base text-coral-500 hover:scale-110 transition-transform"
+            className={cn(
+              "p-1.5 rounded-md transition-colors",
+              darkMode ? "text-ocean-400 hover:text-white hover:bg-ocean-700" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+            )}
+            aria-label="Edit activity"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit?.();
+            }}
+            tabIndex={0}
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
+            className={cn(
+              "p-1.5 rounded-md transition-colors",
+              darkMode ? "text-ocean-400 hover:text-red-400 hover:bg-ocean-700" : "text-slate-400 hover:text-red-600 hover:bg-red-50"
+            )}
             aria-label="Delete activity"
             onClick={(e) => {
               e.stopPropagation();
@@ -559,15 +492,18 @@ const ActivityCard = ({
             }}
             tabIndex={0}
           >
-            🗑️
+            <Trash2 className="w-4 h-4" />
           </button>
           <button
             {...dragHandleProps}
-            className="text-base text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing hover:scale-110 transition-all"
+            className={cn(
+              "p-1.5 rounded-md cursor-grab active:cursor-grabbing transition-colors",
+              darkMode ? "text-ocean-400 hover:text-white hover:bg-ocean-700" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+            )}
             aria-label="Reorder activity"
             tabIndex={0}
           >
-            ☰
+            <GripVertical className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -582,7 +518,7 @@ const AnalyticsModal = ({ isOpen, onClose, profile }: { isOpen: boolean; onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[98vw] sm:max-w-[95vw] w-full h-[95vh] sm:h-[90vh] p-0 overflow-hidden gap-0 bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900 border-0 shadow-2xl rounded-3xl">
+      <DialogContent className="max-w-[98vw] sm:max-w-[95vw] w-full h-[95vh] sm:h-[90vh] p-0 overflow-hidden gap-0 bg-ocean-950 border border-ocean-800 shadow-2xl rounded-xl">
         <DashboardLayout profile={profile} onClose={onClose} darkMode={darkMode} />
       </DialogContent>
     </Dialog>
@@ -623,164 +559,118 @@ const SettingsModal = ({
       },
     });
     toast({
-      title: "Settings Saved!",
-      description: `Settings updated successfully`
+      title: "Settings saved",
+      description: `Your preferences have been updated.`
     });
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[540px] rounded-3xl p-0 overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900">
-        {/* Mesh gradient overlay */}
-        <div className="absolute inset-0 bg-mesh-gradient opacity-20 pointer-events-none" aria-hidden="true" />
-
-        <DialogHeader className="relative px-8 pt-8 pb-6">
-          <DialogTitle className="flex items-center gap-3 text-3xl font-display font-bold bg-gradient-to-r from-white to-electric-200 bg-clip-text text-transparent">
-            <span className="text-3xl">⚙️</span>
+      <DialogContent className="sm:max-w-[480px] rounded-xl p-0 overflow-hidden bg-white border border-slate-200 shadow-xl">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
+          <DialogTitle className="flex items-center gap-2 text-lg font-display font-semibold text-slate-900">
+            <Settings className="w-5 h-5 text-slate-400" />
             Settings
           </DialogTitle>
-          <DialogDescription className="text-slate-300 font-sans text-base mt-2">
+          <DialogDescription className="text-slate-500 text-sm">
             Customize your FocusFlow experience
           </DialogDescription>
         </DialogHeader>
 
-        <div className="relative space-y-6 px-8 pb-8">
-          {/* Profile Info Card */}
-          <motion.div
-            className="flex items-center gap-4 p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <div className="w-14 h-14 text-4xl bg-white/10 border-2 border-white/30 rounded-2xl flex items-center justify-center">
+        <div className="space-y-5 px-6 py-5">
+          {/* Profile Info */}
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+            <div className="w-11 h-11 text-2xl bg-white border border-slate-200 rounded-lg flex items-center justify-center">
               {profile.avatar}
             </div>
             <div>
-              <div className="font-display font-bold text-white text-lg">{profile.name}</div>
-              <div className="text-sm text-slate-300 font-sans capitalize">{profile.type} Profile</div>
+              <div className="font-semibold text-slate-900 text-sm">{profile.name}</div>
+              <div className="text-xs text-slate-500 capitalize">{profile.type} profile</div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Dark Mode Toggle */}
-          <motion.div
-            className="flex items-center justify-between p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{darkMode ? "🌙" : "☀️"}</span>
-              <div>
-                <div className="font-sans font-semibold text-white">Dark Mode</div>
-                <div className="text-sm text-slate-300 font-sans">Switch between light and dark theme</div>
-              </div>
+          <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
+            <div>
+              <div className="font-medium text-slate-900 text-sm">Dark mode</div>
+              <div className="text-xs text-slate-500">Switch between light and dark theme</div>
             </div>
             <button
               onClick={() => setDarkMode(!darkMode)}
               className={cn(
-                "relative w-14 h-8 rounded-full transition-colors duration-300",
-                darkMode ? "bg-electric-500" : "bg-white/20"
+                "relative w-11 h-6 rounded-full transition-colors",
+                darkMode ? "bg-electric-600" : "bg-slate-200"
               )}
+              role="switch"
+              aria-checked={darkMode}
               aria-label="Toggle dark mode"
             >
               <motion.div
-                className="absolute top-1 w-6 h-6 rounded-full bg-white shadow-lg"
+                className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow"
                 initial={false}
-                animate={{
-                  x: darkMode ? 30 : 4
-                }}
+                animate={{ x: darkMode ? 22 : 2 }}
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
               />
             </button>
-          </motion.div>
+          </div>
 
           {/* Completion Goal Slider */}
-          <motion.div
-            className="space-y-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label htmlFor="completion-goal" className="text-sm font-sans font-semibold text-white">
-                Daily Completion Goal
+              <Label htmlFor="completion-goal" className="text-sm font-medium text-slate-900">
+                Daily completion goal
               </Label>
-              <span className="text-4xl font-display font-bold bg-gradient-to-r from-electric-400 to-coral-400 bg-clip-text text-transparent">{completionGoal}%</span>
+              <span className="text-lg font-display font-semibold text-electric-600 tabular-nums">{completionGoal}%</span>
             </div>
-            <p className="text-sm text-slate-300 font-sans">
-              Complete at least this percentage of activities to maintain your streak
+            <p className="text-xs text-slate-500">
+              Complete at least this percentage of activities to maintain your streak.
             </p>
-            <div className="relative pt-2">
-              <input
-                id="completion-goal"
-                type="range"
-                min="50"
-                max="100"
-                step="5"
-                value={completionGoal}
-                onChange={(e) => setCompletionGoal(parseInt(e.target.value))}
-                className="w-full h-3 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-electric-500 [&::-webkit-slider-thumb]:to-electric-600 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-electric-500/50 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gradient-to-r [&::-moz-range-thumb]:from-electric-500 [&::-moz-range-thumb]:to-electric-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-lg [&::-moz-range-thumb]:shadow-electric-500/50"
-                style={{
-                  background: `linear-gradient(to right, #06b6d4 0%, #06b6d4 ${(completionGoal - 50) * 2}%, rgba(255,255,255,0.1) ${(completionGoal - 50) * 2}%, rgba(255,255,255,0.1) 100%)`
-                }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-slate-400 font-sans font-medium">
+            <input
+              id="completion-goal"
+              type="range"
+              min="50"
+              max="100"
+              step="5"
+              value={completionGoal}
+              onChange={(e) => setCompletionGoal(parseInt(e.target.value))}
+              className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-electric-600"
+            />
+            <div className="flex justify-between text-xs text-slate-400">
               <span>50%</span>
               <span>75%</span>
               <span>100%</span>
             </div>
-          </motion.div>
+          </div>
 
           {/* Profile Stats */}
-          <motion.div
-            className="pt-6 border-t border-white/10 space-y-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="text-base font-display font-bold text-white">Profile Statistics</div>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="pt-4 border-t border-slate-100 space-y-3">
+            <div className="text-sm font-medium text-slate-900">Profile statistics</div>
+            <div className="grid grid-cols-2 gap-2">
               {[
-                { icon: "🔥", label: "Current Streak", value: `${profile.streaks.current} days`, gradient: "from-coral-400 to-amber-400" },
-                { icon: "🏆", label: "Best Streak", value: `${profile.streaks.best} days`, gradient: "from-amber-400 to-yellow-400" },
-                { icon: "⭐", label: "Perfect Days", value: profile.streaks.perfectDays, gradient: "from-electric-400 to-blue-400" },
-                { icon: "📋", label: "Activities", value: Object.keys(profile.activities).length, gradient: "from-green-400 to-emerald-400" },
+                { label: "Current streak", value: `${profile.streaks.current} days` },
+                { label: "Best streak", value: `${profile.streaks.best} days` },
+                { label: "Perfect days", value: String(profile.streaks.perfectDays) },
+                { label: "Activities", value: String(Object.keys(profile.activities).length) },
               ].map((stat, i) => (
-                <motion.div
-                  key={i}
-                  className="p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 + i * 0.05 }}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">{stat.icon}</span>
-                    <div className="text-xs text-slate-400 font-sans">{stat.label}</div>
-                  </div>
-                  <div className={`text-2xl font-display font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
-                    {stat.value}
-                  </div>
-                </motion.div>
+                <div key={i} className="p-3 rounded-lg border border-slate-200">
+                  <div className="text-xs text-slate-500 mb-1">{stat.label}</div>
+                  <div className="text-base font-display font-semibold text-slate-900 tabular-nums">{stat.value}</div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
 
-        <DialogFooter className="relative px-8 pb-8 flex flex-row justify-end gap-3">
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            className="rounded-xl px-6 py-2 text-white hover:bg-white/10 font-sans"
-          >
+        <DialogFooter className="px-6 pb-6 flex flex-row justify-end gap-2">
+          <Button variant="ghost" onClick={onClose} className="rounded-lg px-4 text-slate-600 hover:text-slate-900">
             Cancel
           </Button>
           <Button
             onClick={handleSave}
-            className="bg-gradient-to-r from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white rounded-xl px-8 py-2 font-sans font-semibold shadow-lg shadow-electric-500/30"
+            className="bg-electric-600 hover:bg-electric-700 text-white rounded-lg px-6 font-medium"
           >
-            Save Changes
+            Save changes
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -795,7 +685,7 @@ const ShareAchievement = ({ profile, onClose }: { profile: any; onClose: () => v
   const streak = getCurrentStreak(profile);
 
   const generateShareText = () => {
-    return `FocusFlow Progress Update\n\n📅 ${today}\n🎯 ${completionRate}% Complete\n🔥 ${streak} Day Streak\n`;
+    return `FocusFlow Progress Update\n\n${today}\n${completionRate}% complete\n${streak} day streak\n`;
   };
 
   const handleShare = async () => {
@@ -805,109 +695,82 @@ const ShareAchievement = ({ profile, onClose }: { profile: any; onClose: () => v
         await navigator.share({
           text: text
         });
-        toast({ title: "Shared!", description: "Your progress has been shared!" });
+        toast({ title: "Shared!", description: "Your progress has been shared." });
       } catch (err) {
         navigator.clipboard.writeText(text);
-        toast({ title: "Copied to clipboard!", description: "Share your progress with others!" });
+        toast({ title: "Copied to clipboard", description: "Share your progress with others." });
       }
     } else {
       navigator.clipboard.writeText(text);
-      toast({ title: "Copied to clipboard!", description: "Share your progress with others!" });
+      toast({ title: "Copied to clipboard", description: "Share your progress with others." });
     }
     onClose();
   };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[480px] rounded-3xl p-0 overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900">
-        {/* Mesh gradient overlay */}
-        <div className="absolute inset-0 bg-mesh-gradient opacity-20 pointer-events-none" aria-hidden="true" />
-
-        <DialogHeader className="relative px-8 pt-8 pb-6">
-          <DialogTitle className="text-3xl font-display font-bold bg-gradient-to-r from-white to-electric-200 bg-clip-text text-transparent">
-            Share Your Progress
+      <DialogContent className="sm:max-w-[440px] rounded-xl p-0 overflow-hidden bg-white border border-slate-200 shadow-xl">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
+          <DialogTitle className="flex items-center gap-2 text-lg font-display font-semibold text-slate-900">
+            <Share2 className="w-5 h-5 text-slate-400" />
+            Share your progress
           </DialogTitle>
-          <DialogDescription className="text-slate-300 font-sans text-base mt-2">
-            Show off your daily achievements!
+          <DialogDescription className="text-slate-500 text-sm">
+            Show off today&apos;s achievements
           </DialogDescription>
         </DialogHeader>
 
-        <div className="relative px-8 pb-8 space-y-6">
+        <div className="px-6 py-5 space-y-5">
           {/* Preview Card */}
-          <motion.div
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-electric-500/20 to-coral-500/20 border border-white/20 p-6"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10" style={{
-              backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-              backgroundSize: '24px 24px'
-            }} aria-hidden="true" />
-
-            <div className="relative space-y-4">
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 text-3xl bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl flex items-center justify-center">
-                    {profile.avatar}
-                  </div>
-                  <div>
-                    <div className="font-display font-bold text-white text-lg">{profile.name}</div>
-                    <div className="text-sm text-electric-200 font-sans">FocusFlow</div>
-                  </div>
+          <div className="rounded-xl bg-ocean-900 p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 text-xl bg-ocean-800 border border-ocean-700 rounded-lg flex items-center justify-center">
+                  {profile.avatar}
                 </div>
-                <div className="text-sm text-slate-300 font-sans">{today}</div>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <div className="text-xs text-slate-300 font-sans mb-1">Completion</div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-display font-bold bg-gradient-to-r from-electric-300 to-electric-100 bg-clip-text text-transparent">
-                      {completionRate}
-                    </span>
-                    <span className="text-lg font-display font-bold text-white">%</span>
-                  </div>
-                  <div className="text-lg mt-1">🎯</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <div className="text-xs text-slate-300 font-sans mb-1">Streak</div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-display font-bold bg-gradient-to-r from-coral-300 to-amber-300 bg-clip-text text-transparent">
-                      {streak}
-                    </span>
-                    <span className="text-lg font-display font-bold text-white">d</span>
-                  </div>
-                  <div className="text-lg mt-1">🔥</div>
+                <div>
+                  <div className="font-display font-semibold text-white text-sm">{profile.name}</div>
+                  <div className="text-xs text-ocean-400">FocusFlow</div>
                 </div>
               </div>
+              <div className="text-xs text-ocean-400 tabular-nums">{today}</div>
+            </div>
 
-              {/* Footer */}
-              <div className="pt-3 border-t border-white/10">
-                <div className="text-xs text-slate-400 font-sans text-center">
-                  Track habits. Build streaks. Stay focused.
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-ocean-800 rounded-lg p-4 border border-ocean-700">
+                <div className="text-xs text-ocean-400 mb-1">Completion</div>
+                <div className="text-2xl font-display font-bold text-white tabular-nums">
+                  {completionRate}<span className="text-base font-medium text-ocean-300">%</span>
+                </div>
+              </div>
+              <div className="bg-ocean-800 rounded-lg p-4 border border-ocean-700">
+                <div className="text-xs text-ocean-400 mb-1">Streak</div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-2xl font-display font-bold text-white tabular-nums">{streak}</span>
+                  <Flame className="w-5 h-5 text-coral-500" />
                 </div>
               </div>
             </div>
-          </motion.div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
+            <div className="pt-4 mt-4 border-t border-ocean-800 text-xs text-ocean-500 text-center">
+              Track habits. Build streaks. Stay focused.
+            </div>
+          </div>
+
+          <div className="flex gap-2">
             <Button
               variant="ghost"
               onClick={onClose}
-              className="flex-1 rounded-xl px-6 py-3 text-white hover:bg-white/10 font-sans"
+              className="flex-1 rounded-lg text-slate-600 hover:text-slate-900"
             >
               Cancel
             </Button>
             <Button
               onClick={handleShare}
-              className="flex-1 bg-gradient-to-r from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white rounded-xl px-6 py-3 font-sans font-semibold shadow-lg shadow-electric-500/30"
+              className="flex-1 bg-electric-600 hover:bg-electric-700 text-white rounded-lg font-medium"
             >
-              📤 Share
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
             </Button>
           </div>
         </div>
@@ -915,6 +778,40 @@ const ShareAchievement = ({ profile, onClose }: { profile: any; onClose: () => v
     </Dialog>
   );
 };
+
+// --- Auth / Sync Controls ---
+const SyncBadge = ({ syncStatus, darkMode }: { syncStatus: string; darkMode?: boolean }) => {
+  const config: Record<string, { icon: React.ReactNode; label: string }> = {
+    local: { icon: <CloudOff className="w-3.5 h-3.5" />, label: "Local only" },
+    syncing: { icon: <RefreshCw className="w-3.5 h-3.5 animate-spin" />, label: "Syncing" },
+    synced: { icon: <Cloud className="w-3.5 h-3.5" />, label: "Synced" },
+    error: { icon: <CloudOff className="w-3.5 h-3.5" />, label: "Sync error" },
+  };
+  const { icon, label } = config[syncStatus] || config.local;
+  return (
+    <span
+      className={cn(
+        "hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border",
+        syncStatus === "synced"
+          ? "text-emerald-700 border-emerald-200 bg-emerald-50"
+          : syncStatus === "error"
+            ? "text-red-700 border-red-200 bg-red-50"
+            : darkMode
+              ? "text-ocean-300 border-ocean-700 bg-ocean-800"
+              : "text-slate-500 border-slate-200 bg-slate-50"
+      )}
+      title={
+        syncStatus === "local"
+          ? "Progress is saved in this browser. Sign in to sync across devices."
+          : `Cloud sync: ${label}`
+      }
+    >
+      {icon}
+      {label}
+    </span>
+  );
+};
+
 // --- Main App Component ---
 
 export default function FocusFlow() {
@@ -929,6 +826,7 @@ export default function FocusFlow() {
   });
   const [saving, setSaving] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
+  const [authProviders, setAuthProviders] = useState<string[]>([]);
 
   // Activity modal state
   const [showActivityModal, setShowActivityModal] = useState(false);
@@ -939,8 +837,20 @@ export default function FocusFlow() {
   const [showShare, setShowShare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
+  // Cloud sync (no-op when signed out or DB not configured)
+  const { syncStatus, signedIn, session } = useCloudSync(appData, setAppData);
+  const isAdmin = Boolean((session?.user as any)?.isAdmin);
+
   // Debounce save
   const saveTimeout = useRef<any>(null);
+
+  // Discover configured OAuth providers (empty when OAuth env vars unset)
+  useEffect(() => {
+    fetch("/api/auth/providers")
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((providers) => setAuthProviders(Object.keys(providers || {})))
+      .catch(() => setAuthProviders([]));
+  }, []);
 
   // Load from localStorage
   useEffect(() => {
@@ -1077,7 +987,7 @@ export default function FocusFlow() {
     });
   }
 
-  // --- Activity Completion (for demo, toggles completed state in dailyRecords) ---
+  // --- Activity Completion (toggles completed state in dailyRecords) ---
   function handleToggleActivity(activityId: string) {
     const today = getTodayDate();
     setAppData((prev: any) => {
@@ -1105,14 +1015,14 @@ export default function FocusFlow() {
       daily.completionRate = total ? Math.round((done / total) * 100) : 0;
       daily.totalPlannedTime = Object.values(profile.activities).reduce((sum: number, a: any) => sum + (a.duration || 0), 0);
       daily.totalCompletedTime = Object.values(daily.activities).reduce((sum: number, a: any) => sum + (a.completed ? a.actualDuration || 0 : 0), 0);
-      
+
       // Alert user when completion rate is close to the goal threshold
       const completionGoal = profile.preferences?.completionGoal || 70;
       if (daily.completionRate >= 60 && daily.completionRate < completionGoal) {
-        toast({ 
-          title: "Almost there! 📊", 
-          description: `You're at ${daily.completionRate}%. Just a bit more to reach ${completionGoal}% and maintain your streak!`, 
-          variant: "destructive" 
+        toast({
+          title: "Almost there!",
+          description: `You're at ${daily.completionRate}%. Just a bit more to reach ${completionGoal}% and maintain your streak.`,
+          variant: "destructive"
         });
       }
       // Streak logic (simple for demo)
@@ -1122,20 +1032,20 @@ export default function FocusFlow() {
           streaks.current = (streaks.current || 0) + 1;
           streaks.best = Math.max(streaks.best || 0, streaks.current);
           streaks.lastUpdate = today;
-          toast({ 
-            title: "Streak increased! 🔥", 
-            description: `You've maintained a ${streaks.current} day streak!`, 
-            variant: "default" 
+          toast({
+            title: "Streak increased!",
+            description: `You've maintained a ${streaks.current} day streak.`,
+            variant: "default"
           });
         }
       } else {
         if (streaks.lastUpdate !== today) {
           streaks.current = 0;
           streaks.lastUpdate = today;
-          toast({ 
-            title: "Streak at risk! ⚠️", 
-            description: "Keep your daily completion above 70% to maintain your streak!", 
-            variant: "destructive" 
+          toast({
+            title: "Streak at risk",
+            description: "Keep your daily completion above your goal to maintain your streak.",
+            variant: "destructive"
           });
         }
       }
@@ -1301,879 +1211,715 @@ export default function FocusFlow() {
     }
   }, [showCreateModal]);
 
+  const authControls = (
+    <div className="flex items-center gap-2">
+      <SyncBadge syncStatus={signedIn ? syncStatus : "local"} darkMode={darkMode} />
+      {isAdmin && (
+        <Link
+          href="/admin"
+          className={cn(
+            "hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+            darkMode ? "text-ocean-300 hover:text-white hover:bg-ocean-800" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+          )}
+        >
+          <ShieldCheck className="w-4 h-4" />
+          Admin
+        </Link>
+      )}
+      {authProviders.length > 0 && (
+        signedIn ? (
+          <Button
+            variant="ghost"
+            onClick={() => signOut()}
+            className={cn(
+              "gap-1.5 rounded-lg text-sm font-medium",
+              darkMode ? "text-ocean-300 hover:text-white hover:bg-ocean-800" : "text-slate-600 hover:text-slate-900"
+            )}
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Sign out</span>
+          </Button>
+        ) : (
+          <Button
+            onClick={() => signIn()}
+            className="gap-1.5 rounded-lg bg-electric-600 hover:bg-electric-700 text-white text-sm font-medium"
+          >
+            <LogIn className="w-4 h-4" />
+            Sign in
+          </Button>
+        )
+      )}
+    </div>
+  );
+
   // --- Main Render ---
   return (
     <>
       <Head>
-        <title>FocusFlow - Beat the Scroll</title>
-        <meta name="description" content="Beat the Scroll, Build Focus. A playful, minimalist productivity app for every life." />
+        <title>FocusFlow — Habit tracking for focused teams and people</title>
+        <meta name="description" content="Track habits, build streaks, and stay focused. FocusFlow is a clean, fast habit tracker with cloud sync and analytics." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div
-        className={cn(
-          "min-h-screen flex flex-col items-center justify-start",
-          "font-sans",
-          "transition-colors duration-300"
-        )}
-        style={{
-          background: darkMode
-            ? `linear-gradient(120deg, #0f172a 0%, #1e293b 100%)`
-            : `linear-gradient(120deg, #F8FAFC 60%, #E0F2FE 100%)`,
-        }}
-      >
+      <div className={cn("min-h-screen font-sans", darkMode ? "bg-ocean-950" : "bg-slate-50")}>
         {/* If no profile selected, show onboarding */}
         {!currentProfile ? (
-          <>
-            {/* New Landing Page */}
-            <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 font-sans overflow-x-hidden">
-              {/* Hero Section */}
-              <section className="relative w-full min-h-[85vh] md:min-h-screen flex items-center justify-center px-4 py-12 md:py-20 overflow-hidden">
-                {/* Mesh Gradient Background */}
-                <div className="absolute inset-0 bg-mesh-gradient opacity-60" aria-hidden="true" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/80" aria-hidden="true" />
-
-                {/* Floating orbs for depth */}
-                <motion.div
-                  className="absolute top-1/4 left-[10%] w-64 h-64 bg-electric-400/20 rounded-full blur-3xl"
-                  animate={{
-                    y: [0, 30, 0],
-                    scale: [1, 1.1, 1],
-                  }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  aria-hidden="true"
-                />
-                <motion.div
-                  className="absolute bottom-1/4 right-[15%] w-72 h-72 bg-coral-400/20 rounded-full blur-3xl"
-                  animate={{
-                    y: [0, -40, 0],
-                    scale: [1, 1.15, 1],
-                  }}
-                  transition={{
-                    duration: 10,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 1
-                  }}
-                  aria-hidden="true"
-                />
-
-                <div className="relative z-10 w-full max-w-6xl mx-auto">
-                  <div className="grid md:grid-cols-2 gap-12 items-center">
-                    {/* Left: Hero Content */}
-                    <motion.div
-                      className="space-y-6"
-                      initial={{ opacity: 0, x: -40 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                      <motion.div
-                        className="inline-block"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 0.6 }}
-                      >
-                        <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/60 backdrop-blur-sm border border-electric-200/50 text-sm font-medium text-ocean-900">
-                          <span className="w-2 h-2 bg-electric-400 rounded-full mr-2 animate-pulse" />
-                          Built for focus, designed for life
-                        </span>
-                      </motion.div>
-
-                      <motion.h1
-                        className="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-slate-900 leading-[1.1]"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3, duration: 0.6 }}
-                      >
-                        Track habits.{" "}
-                        <span className="bg-gradient-to-r from-electric-500 to-coral-400 bg-clip-text text-transparent">
-                          Build streaks.
-                        </span>{" "}
-                        Stay focused.
-                      </motion.h1>
-
-                      <motion.p
-                        className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-lg"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.6 }}
-                      >
-                        A minimal habit tracker with visual progress rings, streak tracking, and analytics—designed for your actual life.
-                      </motion.p>
-
-                      {/* Feature Pills */}
-                      <motion.div
-                        className="flex flex-wrap gap-3 pt-2"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5, duration: 0.6 }}
-                      >
-                        {[
-                          { icon: "✓", text: "No account required" },
-                          { icon: "✓", text: "Works offline" },
-                          { icon: "✓", text: "Multiple profiles" },
-                          { icon: "✓", text: "Visual analytics" },
-                        ].map((pill, i) => (
-                          <motion.span
-                            key={i}
-                            className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200/50 text-sm text-slate-700"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.6 + i * 0.1, duration: 0.4 }}
-                          >
-                            <span className="text-electric-500 mr-1.5 font-bold">{pill.icon}</span>
-                            {pill.text}
-                          </motion.span>
-                        ))}
-                      </motion.div>
-
-                      <motion.div
-                        className="pt-4"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.8, duration: 0.6 }}
-                      >
-                        <Button
-                          onClick={() => setShowCreateModal(true)}
-                          className="group relative px-8 py-6 bg-gradient-to-r from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white font-semibold text-lg rounded-2xl shadow-lg shadow-electric-500/30 hover:shadow-xl hover:shadow-electric-500/40 transition-all duration-300 border-0"
-                          aria-label="Start tracking your habits"
-                        >
-                          <span className="relative z-10">Start Tracking</span>
-                          <motion.span
-                            className="absolute inset-0 bg-white/20 rounded-2xl"
-                            initial={{ scale: 0, opacity: 0 }}
-                            whileHover={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 0.3 }}
-                          />
-                        </Button>
-                      </motion.div>
-                    </motion.div>
-
-                    {/* Right: Visual Element - Abstract Representation */}
-                    <motion.div
-                      className="hidden md:block relative"
-                      initial={{ opacity: 0, x: 40 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-                    >
-                      <div className="relative aspect-square max-w-md mx-auto">
-                        {/* Progress ring visualization */}
-                        <motion.div
-                          className="absolute inset-0 rounded-full bg-gradient-to-br from-electric-100 to-coral-100 blur-2xl opacity-60"
-                          animate={{
-                            scale: [1, 1.05, 1],
-                            rotate: [0, 5, 0],
-                          }}
-                          transition={{
-                            duration: 6,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                        />
-                        <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20">
-                          <div className="aspect-square flex items-center justify-center">
-                            {/* Simulated progress ring */}
-                            <svg className="w-full h-full -rotate-90" viewBox="0 0 200 200">
-                              <circle
-                                cx="100"
-                                cy="100"
-                                r="85"
-                                fill="none"
-                                stroke="#e5e7eb"
-                                strokeWidth="12"
-                              />
-                              <motion.circle
-                                cx="100"
-                                cy="100"
-                                r="85"
-                                fill="none"
-                                stroke="url(#gradient)"
-                                strokeWidth="12"
-                                strokeLinecap="round"
-                                strokeDasharray="534"
-                                initial={{ strokeDashoffset: 534 }}
-                                animate={{ strokeDashoffset: 534 * 0.25 }}
-                                transition={{ duration: 2, ease: "easeOut", delay: 1 }}
-                              />
-                              <defs>
-                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                  <stop offset="0%" stopColor="#22d3ee" />
-                                  <stop offset="100%" stopColor="#ff6b6b" />
-                                </linearGradient>
-                              </defs>
-                            </svg>
-                            <motion.div
-                              className="absolute inset-0 flex flex-col items-center justify-center"
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: 1.5, duration: 0.6 }}
-                            >
-                              <span className="text-5xl font-display font-bold text-slate-900">75%</span>
-                              <span className="text-sm text-slate-500 mt-1">Daily Progress</span>
-                              <div className="flex items-center gap-2 mt-4">
-                                <span className="text-2xl">🔥</span>
-                                <span className="text-lg font-semibold text-amber-600">12 days</span>
-                              </div>
-                            </motion.div>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
+          <div className="w-full min-h-screen bg-white font-sans">
+            {/* Nav */}
+            <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/90 backdrop-blur">
+              <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-16">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-electric-600 flex items-center justify-center">
+                    <Target className="w-4.5 h-4.5 text-white" size={18} />
                   </div>
+                  <span className="font-display font-bold text-lg text-slate-900 tracking-tight">FocusFlow</span>
                 </div>
-              </section>
-
-              {/* Features Section - Bento Box Layout */}
-              <section className="relative w-full px-4 py-16 md:py-24 bg-white">
-                <div className="max-w-6xl mx-auto">
-                  <motion.div
-                    className="text-center mb-12 md:mb-16"
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">
-                      What you actually get
-                    </h2>
-                    <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                      No fluff, no fake promises. Here's what FocusFlow does, period.
-                    </p>
-                  </motion.div>
-
-                  {/* Bento Grid */}
-                  <div className="grid md:grid-cols-3 gap-6">
-                    {/* Feature 1: Progress Tracking */}
-                    <motion.div
-                      className="md:col-span-2 group relative overflow-hidden rounded-3xl bg-gradient-to-br from-electric-50 to-electric-100/50 p-8 md:p-10 border border-electric-200/50 hover:shadow-xl transition-shadow duration-300"
-                      initial={{ opacity: 0, y: 40 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-50px" }}
-                      transition={{ duration: 0.6, delay: 0.1 }}
-                    >
-                      <div className="relative z-10">
-                        <div className="w-12 h-12 rounded-2xl bg-electric-500 flex items-center justify-center mb-4">
-                          <span className="text-2xl">📊</span>
-                        </div>
-                        <h3 className="text-2xl md:text-3xl font-display font-bold text-slate-900 mb-3">
-                          Daily progress at a glance
-                        </h3>
-                        <p className="text-slate-700 text-lg mb-4">
-                          See your completion rate in real-time with a visual progress ring. No mental math required.
-                        </p>
-                        <ul className="space-y-2 text-slate-600">
-                          <li className="flex items-start gap-2">
-                            <span className="text-electric-500 mt-1">→</span>
-                            <span>Check off activities as you complete them</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-electric-500 mt-1">→</span>
-                            <span>Watch your progress ring fill throughout the day</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="text-electric-500 mt-1">→</span>
-                            <span>Weekly and monthly views show completion patterns</span>
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="absolute -right-8 -bottom-8 w-64 h-64 bg-electric-200/30 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-500" aria-hidden="true" />
-                    </motion.div>
-
-                    {/* Feature 2: Streaks */}
-                    <motion.div
-                      className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-coral-50 to-amber-50 p-8 md:p-10 border border-coral-200/50 hover:shadow-xl transition-shadow duration-300"
-                      initial={{ opacity: 0, y: 40 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-50px" }}
-                      transition={{ duration: 0.6, delay: 0.2 }}
-                    >
-                      <div className="relative z-10">
-                        <div className="w-12 h-12 rounded-2xl bg-coral-400 flex items-center justify-center mb-4">
-                          <span className="text-2xl">🔥</span>
-                        </div>
-                        <h3 className="text-2xl font-display font-bold text-slate-900 mb-3">
-                          Streaks that motivate
-                        </h3>
-                        <p className="text-slate-700 mb-4">
-                          Build momentum with a streak counter that tracks consistency.
-                        </p>
-                        <div className="space-y-3">
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-display font-bold text-coral-500">12</span>
-                            <span className="text-slate-600">day streak</span>
-                          </div>
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-display font-bold text-amber-500">28</span>
-                            <span className="text-slate-600">best ever</span>
-                          </div>
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-display font-bold text-green-500">15</span>
-                            <span className="text-slate-600">perfect days</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="absolute -right-6 -bottom-6 w-48 h-48 bg-coral-200/30 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-500" aria-hidden="true" />
-                    </motion.div>
-
-                    {/* Feature 3: Multiple Profiles */}
-                    <motion.div
-                      className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-50 to-pink-50 p-8 md:p-10 border border-purple-200/50 hover:shadow-xl transition-shadow duration-300"
-                      initial={{ opacity: 0, y: 40 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-50px" }}
-                      transition={{ duration: 0.6, delay: 0.3 }}
-                    >
-                      <div className="relative z-10">
-                        <div className="w-12 h-12 rounded-2xl bg-purple-500 flex items-center justify-center mb-4">
-                          <span className="text-2xl">👤</span>
-                        </div>
-                        <h3 className="text-2xl font-display font-bold text-slate-900 mb-3">
-                          Switch between roles
-                        </h3>
-                        <p className="text-slate-700 mb-4">
-                          Because you're not just one thing. Create profiles for different parts of your life.
-                        </p>
-                        <div className="space-y-2 text-sm">
-                          {["👩‍🎓 Student", "💼 Professional", "🚀 Entrepreneur", "🎨 Creative", "👩‍👧‍👦 Parent"].map((role, i) => (
-                            <motion.div
-                              key={i}
-                              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/60 backdrop-blur-sm"
-                              initial={{ opacity: 0, x: -20 }}
-                              whileInView={{ opacity: 1, x: 0 }}
-                              viewport={{ once: true }}
-                              transition={{ delay: 0.5 + i * 0.1 }}
-                            >
-                              <span>{role}</span>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="absolute -left-6 -top-6 w-48 h-48 bg-purple-200/30 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-500" aria-hidden="true" />
-                    </motion.div>
-
-                    {/* Feature 4: Analytics */}
-                    <motion.div
-                      className="md:col-span-2 group relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-50 to-emerald-50 p-8 md:p-10 border border-green-200/50 hover:shadow-xl transition-shadow duration-300"
-                      initial={{ opacity: 0, y: 40 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-50px" }}
-                      transition={{ duration: 0.6, delay: 0.4 }}
-                    >
-                      <div className="relative z-10">
-                        <div className="w-12 h-12 rounded-2xl bg-green-500 flex items-center justify-center mb-4">
-                          <span className="text-2xl">📈</span>
-                        </div>
-                        <h3 className="text-2xl md:text-3xl font-display font-bold text-slate-900 mb-3">
-                          See patterns you didn't notice
-                        </h3>
-                        <p className="text-slate-700 text-lg mb-4">
-                          Comprehensive analytics beyond basic tracking—activity leaderboards, category performance, time-of-day heatmaps, and trend analysis.
-                        </p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {[
-                            { label: "Total time", value: "48h" },
-                            { label: "Avg completion", value: "82%" },
-                            { label: "Active days", value: "23" },
-                            { label: "Best activity", value: "Deep Work" },
-                          ].map((stat, i) => (
-                            <motion.div
-                              key={i}
-                              className="bg-white/60 backdrop-blur-sm rounded-xl p-3"
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              whileInView={{ opacity: 1, scale: 1 }}
-                              viewport={{ once: true }}
-                              transition={{ delay: 0.6 + i * 0.1 }}
-                            >
-                              <div className="text-xs text-slate-600 mb-1">{stat.label}</div>
-                              <div className="text-lg font-display font-bold text-slate-900">{stat.value}</div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="absolute -right-8 -top-8 w-64 h-64 bg-green-200/30 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-500" aria-hidden="true" />
-                    </motion.div>
-                  </div>
-                </div>
-              </section>
-
-              {/* CTA Section */}
-              <section className="relative w-full px-4 py-20 md:py-28 bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900 overflow-hidden">
-                <div className="absolute inset-0 opacity-30" aria-hidden="true">
-                  <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-electric-500/20 rounded-full blur-3xl" />
-                  <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-coral-500/20 rounded-full blur-3xl" />
-                </div>
-
-                <div className="relative z-10 max-w-4xl mx-auto text-center">
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6">
-                      Ready to build better habits?
-                    </h2>
-                    <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
-                      No signup. No payment. No BS. Just create a profile and start tracking.
-                    </p>
+                <div className="flex items-center gap-3">
+                  {authProviders.length > 0 && !signedIn && (
                     <Button
-                      onClick={() => setShowCreateModal(true)}
-                      className="group relative px-10 py-7 bg-white hover:bg-slate-50 text-slate-900 font-semibold text-xl rounded-2xl shadow-2xl hover:shadow-white/20 transition-all duration-300 border-0"
-                      aria-label="Create your first profile"
+                      variant="ghost"
+                      onClick={() => signIn()}
+                      className="text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg"
                     >
-                      <span className="relative z-10 flex items-center gap-2">
-                        Create Your First Profile
-                        <motion.span
-                          animate={{ x: [0, 4, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        >
-                          →
-                        </motion.span>
-                      </span>
+                      Sign in
                     </Button>
+                  )}
+                  <Button
+                    onClick={() => setShowCreateModal(true)}
+                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-medium px-4"
+                  >
+                    Get started
+                  </Button>
+                </div>
+              </div>
+            </header>
+
+            {/* Hero */}
+            <section className="relative w-full px-6 pt-20 pb-16 lg:pt-28 lg:pb-24">
+              <div className="max-w-6xl mx-auto">
+                <div className="grid lg:grid-cols-2 gap-16 items-center">
+                  <motion.div
+                    className="space-y-7"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                  >
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-electric-50 border border-electric-100 text-xs font-medium text-electric-700">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Now with cloud sync and team analytics
+                    </span>
+
+                    <h1 className="text-5xl lg:text-6xl font-display font-bold text-slate-900 leading-[1.05] tracking-tight">
+                      The habit tracker built for how you actually work
+                    </h1>
+
+                    <p className="text-lg text-slate-600 leading-relaxed max-w-lg">
+                      Plan your day, check off activities, and watch streaks compound.
+                      Works instantly in your browser — sign in to sync across devices.
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button
+                        onClick={() => setShowCreateModal(true)}
+                        className="h-12 px-6 bg-electric-600 hover:bg-electric-700 text-white font-medium text-base rounded-lg shadow-sm"
+                        aria-label="Start tracking your habits"
+                      >
+                        Start tracking — it&apos;s free
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                      {authProviders.length > 0 && !signedIn && (
+                        <Button
+                          variant="outline"
+                          onClick={() => signIn()}
+                          className="h-12 px-6 border-slate-300 text-slate-700 hover:bg-slate-50 font-medium text-base rounded-lg"
+                        >
+                          <LogIn className="w-4 h-4 mr-2" />
+                          Sign in to sync
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2">
+                      {[
+                        "No account required",
+                        "Works offline",
+                        "Multiple profiles",
+                        "Visual analytics",
+                      ].map((text, i) => (
+                        <span key={i} className="inline-flex items-center gap-1.5 text-sm text-slate-500">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          {text}
+                        </span>
+                      ))}
+                    </div>
                   </motion.div>
 
-                  {/* Existing profiles section (when user has profiles) */}
-                  {profiles.length > 0 && (
-                    <motion.div
-                      className="mt-16 pt-12 border-t border-white/10"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                    >
-                      <h3 className="text-2xl font-display font-semibold text-white mb-6">Your Profiles</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
-                        {profiles.map((profile: any, idx: number) => (
-                          <motion.button
-                            key={profile.id}
-                            className="group flex items-center gap-4 p-4 bg-white/10 hover:bg-white/15 backdrop-blur-sm rounded-2xl border border-white/20 hover:border-white/30 transition-all duration-200"
-                            onClick={() => handleProfileSwitch(profile.id)}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 * idx }}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <Avatar className="w-12 h-12 border-2 border-white/30">
-                              <AvatarFallback
-                                className={cn(
-                                  "flex h-full w-full items-center justify-center rounded-full text-2xl",
-                                  {
-                                    "bg-[#8B5CF6] text-white": profile.type === "student",
-                                    "bg-[#3B82F6] text-white": profile.type === "professional" || profile.type === "custom",
-                                    "bg-[#F59E0B] text-white": profile.type === "entrepreneur",
-                                    "bg-[#EC4899] text-white": profile.type === "creative",
-                                    "bg-[#10B981] text-white": profile.type === "mom",
-                                  }
-                                )}
-                              >
-                                {profile.avatar}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 text-left">
-                              <div className="font-semibold text-white">{profile.name}</div>
-                              <div className="text-sm text-slate-300 flex items-center gap-3">
-                                <span className="flex items-center gap-1">
-                                  🔥 {getCurrentStreak(profile)}d
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  ✅ {getCompletionRate(profile)}%
-                                </span>
-                              </div>
-                            </div>
-                          </motion.button>
-                        ))}
+                  {/* Product visual */}
+                  <motion.div
+                    className="hidden lg:block"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
+                  >
+                    <div className="relative rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60 p-8">
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <div className="text-sm font-medium text-slate-900">Today&apos;s progress</div>
+                          <div className="text-xs text-slate-500">Thursday</div>
+                        </div>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-coral-50 border border-coral-100 text-xs font-semibold text-coral-600">
+                          <Flame className="w-3.5 h-3.5" />
+                          12 day streak
+                        </span>
                       </div>
-                    </motion.div>
-                  )}
-
-                  {loading && (
-                    <div className="mt-8 text-white/60">Loading...</div>
-                  )}
-
-                  {storageError && (
-                    <div className="mt-8 text-coral-400" role="alert">
-                      {storageError}
+                      <div className="flex items-center gap-8">
+                        <div className="relative w-40 h-40 shrink-0">
+                          <svg className="w-full h-full -rotate-90" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="85" fill="none" stroke="#e2e8f0" strokeWidth="14" />
+                            <motion.circle
+                              cx="100" cy="100" r="85" fill="none"
+                              stroke="#4f46e5" strokeWidth="14" strokeLinecap="round"
+                              strokeDasharray="534"
+                              initial={{ strokeDashoffset: 534 }}
+                              animate={{ strokeDashoffset: 534 * 0.25 }}
+                              transition={{ duration: 1.6, ease: "easeOut", delay: 0.6 }}
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-3xl font-display font-bold text-slate-900 tabular-nums">75%</span>
+                            <span className="text-xs text-slate-500">complete</span>
+                          </div>
+                        </div>
+                        <div className="flex-1 space-y-2.5">
+                          {[
+                            { name: "Deep Work", done: true },
+                            { name: "Team standup", done: true },
+                            { name: "Learning", done: true },
+                            { name: "Exercise", done: false },
+                          ].map((item, i) => (
+                            <motion.div
+                              key={i}
+                              className="flex items-center gap-2.5 text-sm"
+                              initial={{ opacity: 0, x: 8 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.8 + i * 0.12 }}
+                            >
+                              <span className={cn(
+                                "w-5 h-5 rounded-md border flex items-center justify-center",
+                                item.done ? "bg-electric-600 border-electric-600 text-white" : "border-slate-300"
+                              )}>
+                                {item.done && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
+                              </span>
+                              <span className={cn(item.done ? "text-slate-400 line-through" : "text-slate-700")}>
+                                {item.name}
+                              </span>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  )}
+                  </motion.div>
                 </div>
-              </section>
-            </div>
-          </>
-        ) : (
-          // --- Main Dashboard ---
-          <main className="w-full max-w-2xl mx-auto flex-1 flex flex-col items-center px-4 pb-2 relative">
-            {/* Background atmosphere */}
-            <div className={cn(
-              "fixed inset-0 bg-gradient-to-br -z-10",
-              darkMode
-                ? "from-slate-950 via-ocean-950 to-slate-900"
-                : "from-slate-50 via-blue-50/30 to-purple-50/20"
-            )} aria-hidden="true" />
-            <div className={cn(
-              "fixed inset-0 bg-mesh-gradient -z-10",
-              darkMode ? "opacity-30" : "opacity-20"
-            )} aria-hidden="true" />
+              </div>
+            </section>
 
-            {/* Top Bar */}
-            <motion.div
-              className="w-full flex flex-row items-center justify-between mt-4 mb-4"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            >
-              <div className="flex flex-row items-center">
-                <Avatar className="w-12 h-12 mr-3 border-2 border-white shadow-md">
-                  <AvatarFallback
-                    className={cn(
-                      "flex h-full w-full items-center justify-center rounded-full select-none",
-                      "text-3xl leading-none",
-                      {
-                        "bg-[#8B5CF6] text-white": currentProfile.type === "student",
-                        "bg-[#3B82F6] text-white": currentProfile.type === "professional" || currentProfile.type === "custom",
-                        "bg-[#F59E0B] text-white": currentProfile.type === "entrepreneur",
-                        "bg-[#EC4899] text-white": currentProfile.type === "creative",
-                        "bg-[#10B981] text-white": currentProfile.type === "mom",
-                      }
-                    )}
-                    style={{
-                      boxShadow: `0 0 20px ${COLOR_PALETTE[currentProfile.type as keyof typeof COLOR_PALETTE] || COLOR_PALETTE.primary}40`
-                    }}
-                    aria-label="Profile avatar"
-                  >
-                    {currentProfile.avatar}
-                  </AvatarFallback>
-                </Avatar>
-                <span className={cn("font-sans font-semibold text-base truncate max-w-[140px]", darkMode ? "text-white" : "text-slate-900")}>{currentProfile.name}</span>
-              </div>
-              <div className="flex-1 flex flex-col items-center">
-                <span className={cn("font-display text-sm font-semibold", darkMode ? "text-white" : "text-slate-800")}>{getTodayDate()}</span>
-                <span className={cn("font-sans text-xs uppercase tracking-wide", darkMode ? "text-slate-300" : "text-slate-500")}>{getDayOfWeek(getTodayDate())}</span>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="rounded-full px-3 py-2 text-base font-medium"
-                    aria-label="Switch profile"
-                  >
-                    <span className="text-lg">⇄</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className={cn(darkMode && "bg-slate-900/95 backdrop-blur-xl border-white/20 rounded-2xl")}>
-                  {profiles.map((profile: Profile) => (
-                    <button
-                      key={profile.id}
-                      className={cn(
-                        "flex flex-row items-center w-full px-2 py-2 rounded-lg",
-                        darkMode ? "text-white" : "",
-                        currentProfileId === profile.id
-                          ? darkMode ? "bg-electric-500/20" : "bg-primary/10"
-                          : darkMode ? "hover:bg-white/10" : "hover:bg-slate-100"
-                      )}
-                      onClick={() => handleProfileSwitch(profile.id)}
-                      aria-label={`Switch to profile ${profile.name}`}
+            {/* Features */}
+            <section className="w-full px-6 py-20 bg-slate-50 border-y border-slate-200">
+              <div className="max-w-6xl mx-auto">
+                <div className="max-w-2xl mb-14">
+                  <h2 className="text-3xl lg:text-4xl font-display font-bold text-slate-900 tracking-tight mb-4">
+                    Everything you need to stay consistent
+                  </h2>
+                  <p className="text-lg text-slate-600">
+                    No fluff, no fake promises. Here&apos;s what FocusFlow does.
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[
+                    {
+                      icon: <LayoutDashboard className="w-5 h-5" />,
+                      title: "Daily progress at a glance",
+                      desc: "Check off activities and watch your completion ring fill in real time. Weekly and monthly views show your patterns.",
+                    },
+                    {
+                      icon: <Flame className="w-5 h-5" />,
+                      title: "Streaks that motivate",
+                      desc: "Hit your daily goal to extend your streak. Track your current run, best ever, and perfect days.",
+                    },
+                    {
+                      icon: <Users className="w-5 h-5" />,
+                      title: "Profiles for every role",
+                      desc: "Student, professional, founder, creative, parent — separate routines for the different parts of your life.",
+                    },
+                    {
+                      icon: <LineChart className="w-5 h-5" />,
+                      title: "Analytics that teach you",
+                      desc: "Activity leaderboards, category performance, time-of-day heatmaps, and week-over-week trends.",
+                    },
+                  ].map((f, i) => (
+                    <motion.div
+                      key={i}
+                      className="rounded-xl bg-white border border-slate-200 p-6 hover:border-slate-300 hover:shadow-md transition-all"
+                      initial={{ opacity: 0, y: 16 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-60px" }}
+                      transition={{ duration: 0.4, delay: i * 0.08 }}
                     >
-                      <span className="mr-2 text-lg">{profile.avatar}</span>
-                      <span className="text-sm">{profile.name}</span>
+                      <div className="w-10 h-10 rounded-lg bg-electric-50 text-electric-600 flex items-center justify-center mb-4">
+                        {f.icon}
+                      </div>
+                      <h3 className="text-base font-display font-semibold text-slate-900 mb-2">{f.title}</h3>
+                      <p className="text-sm text-slate-600 leading-relaxed">{f.desc}</p>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* For teams strip */}
+                <motion.div
+                  className="mt-6 rounded-xl bg-ocean-900 p-8 lg:p-10 grid lg:grid-cols-[1fr_auto] gap-6 items-center"
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-electric-300 uppercase tracking-wider mb-3">
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      For coaches &amp; teams
+                    </div>
+                    <h3 className="text-2xl font-display font-bold text-white mb-2 tracking-tight">
+                      Run habit programs for your clients
+                    </h3>
+                    <p className="text-ocean-300 max-w-2xl">
+                      Onboard members, localize currencies and tracking metrics for any market,
+                      and monitor engagement and habit progress from the built-in admin dashboard.
+                    </p>
+                  </div>
+                  {authProviders.length > 0 && (
+                    <Button
+                      onClick={() => signIn()}
+                      className="h-11 px-6 bg-white text-slate-900 hover:bg-slate-100 font-medium rounded-lg whitespace-nowrap"
+                    >
+                      Sign in to get started
+                    </Button>
+                  )}
+                </motion.div>
+              </div>
+            </section>
+
+            {/* CTA + existing profiles */}
+            <section className="w-full px-6 py-20">
+              <div className="max-w-3xl mx-auto text-center">
+                <h2 className="text-3xl lg:text-4xl font-display font-bold text-slate-900 tracking-tight mb-4">
+                  Ready to build better habits?
+                </h2>
+                <p className="text-lg text-slate-600 mb-8">
+                  Create a profile and start tracking in under a minute. No signup required.
+                </p>
+                <Button
+                  onClick={() => setShowCreateModal(true)}
+                  className="h-12 px-8 bg-electric-600 hover:bg-electric-700 text-white font-medium text-base rounded-lg shadow-sm"
+                  aria-label="Create your first profile"
+                >
+                  Create your first profile
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+
+                {profiles.length > 0 && (
+                  <div className="mt-16 pt-12 border-t border-slate-200 text-left">
+                    <h3 className="text-lg font-display font-semibold text-slate-900 mb-4">Your profiles</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {profiles.map((profile: any) => (
+                        <button
+                          key={profile.id}
+                          className="group flex items-center gap-3 p-4 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors text-left"
+                          onClick={() => handleProfileSwitch(profile.id)}
+                        >
+                          <Avatar className="w-10 h-10 border border-slate-200">
+                            <AvatarFallback
+                              className="flex h-full w-full items-center justify-center rounded-full text-xl text-white"
+                              style={{ background: COLOR_PALETTE[profile.type as keyof typeof COLOR_PALETTE] || COLOR_PALETTE.primary }}
+                            >
+                              {profile.avatar}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-slate-900 text-sm truncate">{profile.name}</div>
+                            <div className="text-xs text-slate-500 flex items-center gap-3 mt-0.5">
+                              <span className="inline-flex items-center gap-1">
+                                <Flame className="w-3 h-3 text-coral-500" /> {getCurrentStreak(profile)}d
+                              </span>
+                              <span className="inline-flex items-center gap-1">
+                                <BarChart3 className="w-3 h-3 text-electric-500" /> {getCompletionRate(profile)}%
+                              </span>
+                            </div>
+                          </div>
+                          <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {loading && <div className="mt-8 text-slate-400 text-sm">Loading…</div>}
+                {storageError && (
+                  <div className="mt-8 text-red-600 text-sm" role="alert">{storageError}</div>
+                )}
+              </div>
+            </section>
+
+            <footer className="w-full border-t border-slate-200 py-8 px-6">
+              <div className="max-w-6xl mx-auto flex items-center justify-between text-sm text-slate-500">
+                <span>&copy; {new Date().getFullYear()} FocusFlow</span>
+                <span>Track habits. Build streaks. Stay focused.</span>
+              </div>
+            </footer>
+          </div>
+        ) : (
+          // --- Main App (desktop-first shell) ---
+          <div className={cn("min-h-screen", darkMode ? "bg-ocean-950" : "bg-slate-50")}>
+            {/* App Header */}
+            <header className={cn(
+              "sticky top-0 z-40 w-full border-b backdrop-blur",
+              darkMode ? "bg-ocean-950/90 border-ocean-800" : "bg-white/90 border-slate-200"
+            )}>
+              <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-8 h-16 gap-4">
+                {/* Left: brand + profile switcher */}
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-electric-600 flex items-center justify-center shrink-0">
+                      <Target className="w-4 h-4 text-white" />
+                    </div>
+                    <span className={cn("font-display font-bold text-lg tracking-tight hidden sm:block", darkMode ? "text-white" : "text-slate-900")}>
+                      FocusFlow
+                    </span>
+                  </div>
+                  <div className={cn("h-6 w-px hidden sm:block", darkMode ? "bg-ocean-800" : "bg-slate-200")} aria-hidden="true" />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className={cn(
+                          "flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors min-w-0",
+                          darkMode ? "hover:bg-ocean-800" : "hover:bg-slate-100"
+                        )}
+                        aria-label="Switch profile"
+                      >
+                        <Avatar className="w-7 h-7">
+                          <AvatarFallback
+                            className="flex h-full w-full items-center justify-center rounded-full text-base text-white"
+                            style={{ background: COLOR_PALETTE[currentProfile.type as keyof typeof COLOR_PALETTE] || COLOR_PALETTE.primary }}
+                          >
+                            {currentProfile.avatar}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className={cn("font-medium text-sm truncate max-w-[140px]", darkMode ? "text-white" : "text-slate-900")}>
+                          {currentProfile.name}
+                        </span>
+                        <ChevronDown className={cn("w-4 h-4 shrink-0", darkMode ? "text-ocean-400" : "text-slate-400")} />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className={cn("w-56 rounded-lg", darkMode && "bg-ocean-900 border-ocean-700")}>
+                      {profiles.map((profile: Profile) => (
+                        <button
+                          key={profile.id}
+                          className={cn(
+                            "flex flex-row items-center w-full px-2 py-2 rounded-md text-sm",
+                            darkMode ? "text-white" : "text-slate-700",
+                            currentProfileId === profile.id
+                              ? darkMode ? "bg-electric-600/20" : "bg-electric-50"
+                              : darkMode ? "hover:bg-ocean-800" : "hover:bg-slate-100"
+                          )}
+                          onClick={() => handleProfileSwitch(profile.id)}
+                          aria-label={`Switch to profile ${profile.name}`}
+                        >
+                          <span className="mr-2 text-base">{profile.avatar}</span>
+                          <span className="truncate">{profile.name}</span>
+                          {currentProfileId === profile.id && <Check className="w-4 h-4 ml-auto text-electric-500" />}
+                        </button>
+                      ))}
+                      <div className={cn("border-t my-1", darkMode ? "border-ocean-700" : "border-slate-100")} />
+                      <button
+                        className={cn(
+                          "flex items-center w-full px-2 py-2 rounded-md font-medium text-sm",
+                          darkMode ? "text-electric-400 hover:bg-ocean-800" : "text-electric-600 hover:bg-electric-50"
+                        )}
+                        onClick={() => setShowCreateModal(true)}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create new profile
+                      </button>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* Center: nav actions (desktop) */}
+                <nav className="hidden md:flex items-center gap-1">
+                  {[
+                    { icon: <BarChart3 className="w-4 h-4" />, label: "Analytics", onClick: () => setShowAnalytics(true) },
+                    { icon: <Share2 className="w-4 h-4" />, label: "Share", onClick: () => setShowShare(true) },
+                    { icon: <Settings className="w-4 h-4" />, label: "Settings", onClick: () => setShowSettings(true) },
+                  ].map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={item.onClick}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                        darkMode ? "text-ocean-300 hover:text-white hover:bg-ocean-800" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                      )}
+                      aria-label={item.label}
+                    >
+                      {item.icon}
+                      {item.label}
                     </button>
                   ))}
-                  <div className={cn("border-t my-1", darkMode ? "border-white/10" : "border-slate-100")} />
-                  <button
-                    className={cn(
-                      "w-full text-left px-2 py-2 rounded-lg font-medium",
-                      darkMode
-                        ? "text-electric-400 hover:bg-electric-500/20"
-                        : "text-primary hover:bg-primary/10"
-                    )}
-                    onClick={() => setShowCreateModal(true)}
+                </nav>
+
+                {/* Right: sync + auth */}
+                {authControls}
+              </div>
+            </header>
+
+            <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8 pb-28 md:pb-12">
+              {/* Page heading */}
+              <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+                <div>
+                  <h1 className={cn("text-2xl lg:text-3xl font-display font-bold tracking-tight", darkMode ? "text-white" : "text-slate-900")}>
+                    {getDayOfWeek(getTodayDate())}
+                  </h1>
+                  <p className={cn("text-sm mt-1 tabular-nums", darkMode ? "text-ocean-400" : "text-slate-500")}>
+                    {getTodayDate()}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "flex items-center gap-2 px-3.5 py-2 rounded-lg border",
+                    darkMode ? "bg-ocean-900 border-ocean-800" : "bg-white border-slate-200"
+                  )}>
+                    <Flame className="w-4 h-4 text-coral-500" />
+                    <span className={cn("text-sm font-semibold tabular-nums", darkMode ? "text-white" : "text-slate-900")}>
+                      {getCurrentStreak(currentProfile)}
+                    </span>
+                    <span className={cn("text-xs", darkMode ? "text-ocean-400" : "text-slate-500")}>day streak</span>
+                  </div>
+                  <div className={cn(
+                    "flex items-center gap-2 px-3.5 py-2 rounded-lg border",
+                    darkMode ? "bg-ocean-900 border-ocean-800" : "bg-white border-slate-200"
+                  )}>
+                    <TrendingUp className="w-4 h-4 text-electric-500" />
+                    <span className={cn("text-sm font-semibold tabular-nums", darkMode ? "text-white" : "text-slate-900")}>
+                      {getCompletionRate(currentProfile)}%
+                    </span>
+                    <span className={cn("text-xs", darkMode ? "text-ocean-400" : "text-slate-500")}>today</span>
+                  </div>
+                  <Button
+                    onClick={handleAddActivity}
+                    className="hidden md:inline-flex bg-electric-600 hover:bg-electric-700 text-white rounded-lg font-medium gap-1.5"
                   >
-                    + Create New Profile
-                  </button>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </motion.div>
-            {/* Progress Ring */}
-            <motion.div
-              className="w-full flex flex-col items-center mt-4 mb-6 relative"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              {/* Radial glow background */}
-              <div className="absolute inset-0 flex items-center justify-center -z-10" aria-hidden="true">
-                <div
-                  className="w-64 h-64 rounded-full blur-3xl opacity-30"
-                  style={{
-                    background: `radial-gradient(circle, ${COLOR_PALETTE[currentProfile.type as keyof typeof COLOR_PALETTE] || COLOR_PALETTE.primary}40 0%, transparent 70%)`
-                  }}
-                />
+                    <Plus className="w-4 h-4" />
+                    Add activity
+                  </Button>
+                </div>
               </div>
 
-              {/* Glass card container */}
-              <div className={cn(
-                "relative backdrop-blur-xl rounded-3xl p-6 shadow-xl",
-                darkMode
-                  ? "bg-white/10 border border-white/20"
-                  : "bg-white/80 border border-white/20"
-              )}>
-                <ProgressRing
-                  size={180}
-                  animate
-                  ariaLabel="Today's Progress"
-                  layers={[
-                    {
-                      // Main completion ring with gradient
-                      value: Math.max(0, Math.min(getCompletionRate(currentProfile) / 100, 1)),
-                      color:
-                        getCompletionRate(currentProfile) < 30
-                          ? COLOR_PALETTE.warning
-                          : getCompletionRate(currentProfile) < 70
-                          ? COLOR_PALETTE.accent
-                          : COLOR_PALETTE.success,
-                      strokeWidth: 16,
-                      pulse: getCompletionRate(currentProfile) === 100,
-                      zIndex: 2,
-                    },
-                    {
-                      // Streak ring (thin, secondary color)
-                      value: 1,
-                      color: COLOR_PALETTE[currentProfile.type as keyof typeof COLOR_PALETTE] || COLOR_PALETTE.primary,
-                      strokeWidth: 4,
-                      dashed: true,
-                      zIndex: 1,
-                    },
-                    ...(getCompletionRate(currentProfile) === 100
-                      ? [
-                          {
-                            // Perfect day marker (outer ring, pulsing)
-                            value: 1,
-                            color: "#FFD700",
-                            strokeWidth: 3,
-                            pulse: true,
-                            zIndex: 3,
-                          },
-                        ]
-                      : []),
-                  ]}
-                >
-                  <span className={cn("text-5xl font-display font-bold", darkMode ? "text-white" : "text-slate-900")}>
-                    {getCompletionRate(currentProfile)}%
-                  </span>
-                  <span className="text-sm font-sans text-coral-500 font-semibold flex items-center mt-2" aria-label="Current streak">
-                    🔥 <span className="font-display ml-1 text-base">{getCurrentStreak(currentProfile)}</span>d
-                  </span>
-                  <span className="text-sm font-sans bg-gradient-to-r from-electric-600 to-coral-500 bg-clip-text text-transparent font-medium mt-2">
-                    {getCompletionRate(currentProfile) < 30
-                      ? "Let's get started!"
-                      : getCompletionRate(currentProfile) < 70
-                      ? "Keep going!"
-                      : "Amazing focus!"}
-                  </span>
-                </ProgressRing>
-              </div>
-            </motion.div>
-            {/* Weekly Overview */}
-            <motion.div
-              className="w-full flex flex-col items-center mt-2 mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <WeeklyOverview dailyRecords={currentProfile.dailyRecords || {}} darkMode={darkMode} />
-            </motion.div>
-            {/* Monthly Heatmap */}
-            <motion.div
-              className="w-full flex flex-col items-center mt-2 mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <MonthlyHeatmap
-                dailyRecords={
-                  // Map dailyRecords to MonthlyHeatmap's expected shape for current month
-                  (Object.values(currentProfile.dailyRecords || {}) as DailyRecord[])
-                    .filter((rec: DailyRecord) => {
-                      if (!rec?.date) return false;
-                      const date = new Date(rec.date);
-                      const now = new Date();
-                      // Ensure we're comparing dates in UTC
-                      return (
-                        date.getUTCFullYear() === now.getUTCFullYear() &&
-                        date.getUTCMonth() === now.getUTCMonth()
-                      );
-                    })
-                    .map((rec: DailyRecord) => ({
-                      date: rec.date,
-                      completion: rec.completionRate ?? 0,
-                      mood: rec.mood,
-                    })) as import("@/components/ui/MonthlyHeatmap").DailyRecord[]
-                }
-                month={new Date().getUTCMonth()}
-                year={new Date().getUTCFullYear()}
-                darkMode={darkMode}
-              />
-            </motion.div>
-            {/* Today's Focus Section */}
-            <motion.div
-              className={cn(
-                "w-full flex flex-row items-center justify-between mt-6 mb-4 px-2 backdrop-blur-sm rounded-2xl p-4 shadow-sm",
-                darkMode
-                  ? "bg-white/10 border border-white/20"
-                  : "bg-white/60 border border-white/50"
-              )}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
-              <div className="flex flex-col items-start">
-                <span className={cn("font-sans text-xs uppercase tracking-wide", darkMode ? "text-slate-300" : "text-slate-500")}>Date</span>
-                <span className={cn("font-display text-base font-bold", darkMode ? "text-white" : "text-slate-800")}>{getTodayDate()}</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className={cn("font-sans text-xs uppercase tracking-wide", darkMode ? "text-coral-400" : "text-coral-500")}>🔥 Streak</span>
-                <span className={cn("font-display text-2xl font-bold", darkMode ? "text-coral-400" : "text-coral-500")}>{getCurrentStreak(currentProfile)}<span className="text-sm">d</span></span>
-              </div>
-              <div className="flex flex-col items-end">
-                <span className={cn("font-sans text-xs uppercase tracking-wide", darkMode ? "text-electric-400" : "text-electric-600")}>Progress</span>
-                <span className={cn("font-display text-2xl font-bold", darkMode ? "text-electric-400" : "text-electric-600")}>
-                  {getCompletionRate(currentProfile)}<span className="text-sm">%</span>
-                </span>
-              </div>
-            </motion.div>
-            {/* Activity Cards with Drag and Drop */}
-            <motion.div
-              className="w-full flex flex-col mt-4 mb-24 px-1 relative"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, delay: 0.6 }}
-            >
-              <motion.h3
-                className={cn("text-2xl font-display font-bold mb-4 px-2", darkMode ? "text-white" : "text-slate-900")}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.7 }}
-              >
-                Today's Activities
-              </motion.h3>
-              <DragDropContext onDragEnd={handleReorderActivities}>
-                <Droppable droppableId="activities">
-                  {(provided) => (
-                    <div ref={provided.innerRef} {...provided.droppableProps}>
-                      <AnimatePresence>
-                        {getActivitiesForToday(currentProfile).map((activity: Activity, idx: number) => {
-                          // Determine state from dailyRecords
-                          const today = getTodayDate();
-                          const daily = currentProfile.dailyRecords?.[today];
-                          const actState = daily?.activities?.[activity.id]?.completed
-                            ? "completed"
-                            : "planned";
-                          return (
-                            <Draggable key={activity.id} draggableId={activity.id} index={idx}>
-                              {(draggableProvided) => (
-                                <div
-                                  ref={draggableProvided.innerRef}
-                                  {...draggableProvided.draggableProps}
-                                  style={draggableProvided.draggableProps.style}
+              {/* Desktop grid: activities left, insights right */}
+              <div className="grid lg:grid-cols-5 gap-8 items-start">
+                {/* Activities column */}
+                <section className="lg:col-span-3">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className={cn("text-lg font-display font-semibold tracking-tight", darkMode ? "text-white" : "text-slate-900")}>
+                      Today&apos;s activities
+                    </h2>
+                    <span className={cn("text-xs", darkMode ? "text-ocean-400" : "text-slate-500")}>
+                      {getActivitiesForToday(currentProfile).length} planned
+                    </span>
+                  </div>
+                  <DragDropContext onDragEnd={handleReorderActivities}>
+                    <Droppable droppableId="activities">
+                      {(provided) => (
+                        <div ref={provided.innerRef} {...provided.droppableProps}>
+                          <AnimatePresence>
+                            {getActivitiesForToday(currentProfile).map((activity: Activity, idx: number) => {
+                              // Determine state from dailyRecords
+                              const today = getTodayDate();
+                              const daily = currentProfile.dailyRecords?.[today];
+                              const actState = daily?.activities?.[activity.id]?.completed
+                                ? "completed"
+                                : "planned";
+                              return (
+                                <Draggable key={activity.id} draggableId={activity.id} index={idx}>
+                                  {(draggableProvided) => (
+                                    <div
+                                      ref={draggableProvided.innerRef}
+                                      {...draggableProvided.draggableProps}
+                                      style={draggableProvided.draggableProps.style}
+                                    >
+                                      <ActivityCard
+                                        activity={activity}
+                                        state={actState}
+                                        onCheck={() => handleToggleActivity(activity.id)}
+                                        onEdit={() => handleEditActivity(activity)}
+                                        onDelete={() => setDeleteConfirmId(activity.id)}
+                                        dragHandleProps={draggableProvided.dragHandleProps}
+                                        darkMode={darkMode}
+                                      />
+                                    </div>
+                                  )}
+                                </Draggable>
+                              );
+                            })}
+                            {getActivitiesForToday(currentProfile).length === 0 && (
+                              <motion.div
+                                className={cn(
+                                  "w-full flex flex-col items-center justify-center py-14 rounded-xl border border-dashed",
+                                  darkMode ? "border-ocean-700 text-ocean-400" : "border-slate-300 text-slate-500"
+                                )}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                              >
+                                <span className="text-sm mb-3">No activities planned for today.</span>
+                                <Button
+                                  onClick={handleAddActivity}
+                                  variant="outline"
+                                  className={cn("rounded-lg gap-1.5", darkMode && "border-ocean-700 text-white hover:bg-ocean-800")}
                                 >
-                                  <ActivityCard
-                                    activity={activity}
-                                    state={actState}
-                                    onCheck={() => handleToggleActivity(activity.id)}
-                                    onEdit={() => handleEditActivity(activity)}
-                                    onDelete={() => setDeleteConfirmId(activity.id)}
-                                    dragHandleProps={draggableProvided.dragHandleProps}
-                                    darkMode={darkMode}
-                                  />
-                                </div>
-                              )}
-                            </Draggable>
-                          );
-                        })}
-                        {getActivitiesForToday(currentProfile).length === 0 && (
-                          <motion.div
-                            className="w-full flex flex-col items-center justify-center py-8"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                          >
-                            <span className="text-slate-400 text-lg">No activities planned for today.</span>
-                          </motion.div>
-                        )}
-                        {provided.placeholder}
-                      </AnimatePresence>
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-              {/* Add Activity Floating Button */}
-              <Button
-                className="fixed bottom-24 right-6 z-40 rounded-full w-16 h-16 bg-gradient-to-br from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white text-4xl flex items-center justify-center shadow-2xl transition-all duration-300 border-2 border-white/20 hover:scale-110 active:scale-95"
-                style={{
-                  boxShadow: "0 8px 24px rgba(6,182,212,0.35), 0 0 0 0 rgba(6,182,212,0.5)",
-                }}
-                aria-label="Add Activity"
-                onClick={handleAddActivity}
-              >
-                +
-              </Button>
-            </motion.div>
-            {/* Bottom Navigation - Frosted Glass */}
+                                  <Plus className="w-4 h-4" />
+                                  Add your first activity
+                                </Button>
+                              </motion.div>
+                            )}
+                            {provided.placeholder}
+                          </AnimatePresence>
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
+                </section>
+
+                {/* Insights column */}
+                <aside className="lg:col-span-2 space-y-6">
+                  {/* Progress ring card */}
+                  <div className={cn(
+                    "rounded-xl border p-6 flex flex-col items-center",
+                    darkMode ? "bg-ocean-900 border-ocean-800" : "bg-white border-slate-200 shadow-sm"
+                  )}>
+                    <ProgressRing
+                      size={170}
+                      animate
+                      ariaLabel="Today's Progress"
+                      layers={[
+                        {
+                          value: Math.max(0, Math.min(getCompletionRate(currentProfile) / 100, 1)),
+                          color:
+                            getCompletionRate(currentProfile) < 30
+                              ? COLOR_PALETTE.warning
+                              : getCompletionRate(currentProfile) < 70
+                              ? COLOR_PALETTE.accent
+                              : COLOR_PALETTE.success,
+                          strokeWidth: 14,
+                          pulse: getCompletionRate(currentProfile) === 100,
+                          zIndex: 2,
+                        },
+                        {
+                          value: 1,
+                          color: COLOR_PALETTE[currentProfile.type as keyof typeof COLOR_PALETTE] || COLOR_PALETTE.primary,
+                          strokeWidth: 3,
+                          dashed: true,
+                          zIndex: 1,
+                        },
+                        ...(getCompletionRate(currentProfile) === 100
+                          ? [
+                              {
+                                value: 1,
+                                color: "#D97706",
+                                strokeWidth: 3,
+                                pulse: true,
+                                zIndex: 3,
+                              },
+                            ]
+                          : []),
+                      ]}
+                    >
+                      <span className={cn("text-4xl font-display font-bold tabular-nums", darkMode ? "text-white" : "text-slate-900")}>
+                        {getCompletionRate(currentProfile)}%
+                      </span>
+                      <span className="text-xs font-medium flex items-center gap-1 mt-1.5 text-coral-500" aria-label="Current streak">
+                        <Flame className="w-3.5 h-3.5" />
+                        <span className="tabular-nums">{getCurrentStreak(currentProfile)}</span> days
+                      </span>
+                      <span className={cn("text-xs mt-1", darkMode ? "text-ocean-400" : "text-slate-500")}>
+                        {getCompletionRate(currentProfile) < 30
+                          ? "Let's get started"
+                          : getCompletionRate(currentProfile) < 70
+                          ? "Keep going"
+                          : "Excellent focus"}
+                      </span>
+                    </ProgressRing>
+                  </div>
+
+                  {/* Weekly Overview */}
+                  <div className="w-full">
+                    <WeeklyOverview dailyRecords={currentProfile.dailyRecords || {}} darkMode={darkMode} />
+                  </div>
+
+                  {/* Monthly Heatmap */}
+                  <div className="w-full">
+                    <MonthlyHeatmap
+                      dailyRecords={
+                        (Object.values(currentProfile.dailyRecords || {}) as DailyRecord[])
+                          .filter((rec: DailyRecord) => {
+                            if (!rec?.date) return false;
+                            const date = new Date(rec.date);
+                            const now = new Date();
+                            return (
+                              date.getUTCFullYear() === now.getUTCFullYear() &&
+                              date.getUTCMonth() === now.getUTCMonth()
+                            );
+                          })
+                          .map((rec: DailyRecord) => ({
+                            date: rec.date,
+                            completion: rec.completionRate ?? 0,
+                            mood: rec.mood,
+                          })) as import("@/components/ui/MonthlyHeatmap").DailyRecord[]
+                      }
+                      month={new Date().getUTCMonth()}
+                      year={new Date().getUTCFullYear()}
+                      darkMode={darkMode}
+                    />
+                  </div>
+                </aside>
+              </div>
+            </main>
+
+            {/* Mobile bottom nav */}
             <nav className={cn(
-              "fixed bottom-0 left-0 w-full backdrop-blur-2xl border-t flex flex-row items-center justify-around py-3 z-30",
-              darkMode
-                ? "bg-slate-900/80 border-white/10 shadow-[0_-4px_16px_rgba(0,0,0,0.3)]"
-                : "bg-white/80 border-white/50 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]"
+              "md:hidden fixed bottom-0 left-0 w-full border-t flex flex-row items-center justify-around py-2 z-30 backdrop-blur",
+              darkMode ? "bg-ocean-950/95 border-ocean-800" : "bg-white/95 border-slate-200"
             )}>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "flex flex-col items-center px-4 py-2 rounded-2xl transition-all duration-200 group",
-                  darkMode
-                    ? "text-electric-400 hover:bg-electric-500/20"
-                    : "text-electric-600 hover:bg-electric-50/80"
-                )}
-                aria-label="Analytics"
-                onClick={() => setShowAnalytics(true)}
-              >
-                <span className="text-2xl group-hover:scale-110 transition-transform">📊</span>
-                <span className="font-sans text-xs font-medium mt-1 uppercase tracking-wide">Analytics</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "flex flex-col items-center px-4 py-2 rounded-2xl transition-all duration-200 group",
-                  darkMode
-                    ? "text-coral-400 hover:bg-coral-500/20"
-                    : "text-coral-500 hover:bg-coral-50/80"
-                )}
-                aria-label="Share"
-                onClick={() => setShowShare(true)}
-              >
-                <span className="text-2xl group-hover:scale-110 transition-transform">📤</span>
-                <span className="font-sans text-xs font-medium mt-1 uppercase tracking-wide">Share</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "flex flex-col items-center px-4 py-2 rounded-2xl transition-all duration-200 group",
-                  darkMode
-                    ? "text-ocean-400 hover:bg-ocean-500/20"
-                    : "text-ocean-600 hover:bg-ocean-50/80"
-                )}
-                aria-label="Settings"
-                onClick={() => setShowSettings(true)}
-              >
-                <span className="text-2xl group-hover:scale-110 transition-transform">⚙️</span>
-                <span className="font-sans text-xs font-medium mt-1 uppercase tracking-wide">Settings</span>
-              </Button>
+              {[
+                { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => setShowAnalytics(true) },
+                { icon: <Plus className="w-5 h-5" />, label: "Add", onClick: handleAddActivity, primary: true },
+                { icon: <Share2 className="w-5 h-5" />, label: "Share", onClick: () => setShowShare(true) },
+                { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => setShowSettings(true) },
+              ].map((item: any) => (
+                <button
+                  key={item.label}
+                  onClick={item.onClick}
+                  className={cn(
+                    "flex flex-col items-center px-4 py-1.5 rounded-lg text-xs font-medium gap-1",
+                    item.primary
+                      ? "text-electric-600"
+                      : darkMode ? "text-ocean-300" : "text-slate-500"
+                  )}
+                  aria-label={item.label}
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              ))}
             </nav>
 
-            
             {/* Analytics Modal */}
             <AnalyticsModal isOpen={showAnalytics} onClose={() => setShowAnalytics(false)} profile={currentProfile} />
 
@@ -2189,26 +1935,23 @@ export default function FocusFlow() {
             {showShare && (
               <ShareAchievement profile={currentProfile} onClose={() => setShowShare(false)} />
             )}
-          </main>
+          </div>
         )}
 
         {/* Create Profile Modal */}
         <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
           <DialogContent
             ref={modalRef}
-            className="max-w-lg w-full rounded-3xl p-0 overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900"
+            className="max-w-lg w-full rounded-xl p-0 overflow-hidden bg-white border border-slate-200 shadow-xl"
             aria-modal="true"
             aria-labelledby="create-profile-title"
             aria-describedby="create-profile-desc"
           >
-            {/* Gradient overlay for depth */}
-            <div className="absolute inset-0 bg-mesh-gradient opacity-20 pointer-events-none" aria-hidden="true" />
-
-            <DialogHeader className="relative px-8 pt-8 pb-6">
-              <DialogTitle id="create-profile-title" className="text-3xl font-display font-bold bg-gradient-to-r from-white to-electric-200 bg-clip-text text-transparent">
-                Create New Profile
+            <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
+              <DialogTitle id="create-profile-title" className="text-lg font-display font-semibold text-slate-900">
+                Create new profile
               </DialogTitle>
-              <DialogDescription id="create-profile-desc" className="text-slate-300 font-sans text-base mt-2">
+              <DialogDescription id="create-profile-desc" className="text-slate-500 text-sm">
                 Personalize your FocusFlow experience
               </DialogDescription>
             </DialogHeader>
@@ -2217,13 +1960,13 @@ export default function FocusFlow() {
                 e.preventDefault();
                 handleCreateProfile();
               }}
-              className="relative px-8 pb-8"
+              className="px-6 pb-6 pt-5"
               autoComplete="off"
             >
               {/* Name */}
-              <div className="mb-6">
-                <Label htmlFor="profile-name" className="block mb-2 font-sans font-semibold text-white">
-                  Profile Name <span className="text-coral-400">*</span>
+              <div className="mb-5">
+                <Label htmlFor="profile-name" className="block mb-1.5 text-sm font-medium text-slate-900">
+                  Profile name <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="profile-name"
@@ -2233,42 +1976,43 @@ export default function FocusFlow() {
                   autoFocus
                   value={createForm.name}
                   onChange={e => setCreateForm(f => ({ ...f, name: e.target.value.slice(0, 20) }))}
-                  placeholder="e.g. Sarah's Mom Life"
-                  className="w-full bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-slate-400 rounded-xl px-4 py-3 focus:ring-2 focus:ring-electric-500 focus:border-electric-500"
+                  placeholder="e.g. Deep Work Mode"
+                  className="w-full rounded-lg border-slate-300 focus-visible:ring-electric-500"
                   aria-required="true"
                   aria-label="Profile name"
                 />
-                <span className="text-xs text-slate-400 mt-1 font-sans">{createForm.name.length}/20</span>
+                <span className="text-xs text-slate-400 mt-1 block tabular-nums">{createForm.name.length}/20</span>
               </div>
 
               {/* Avatar Picker */}
-              <div className="mb-6">
-                <Label className="block mb-2 font-sans font-semibold text-white">Avatar Emoji</Label>
-                <div className="flex flex-row items-center space-x-3">
-                  <div className="w-16 h-16 text-4xl bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="mb-5">
+                <Label className="block mb-1.5 text-sm font-medium text-slate-900">Avatar</Label>
+                <div className="flex flex-row items-center gap-3">
+                  <div className="w-12 h-12 text-2xl bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center">
                     {createForm.avatar}
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         type="button"
-                        className="text-sm px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl shadow-none hover:bg-white/20 text-white font-sans"
+                        variant="outline"
+                        className="text-sm rounded-lg border-slate-300 text-slate-700"
                         aria-label="Pick emoji"
                       >
-                        Pick Emoji
+                        Choose emoji
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="max-h-64 overflow-y-auto p-3 bg-slate-800/95 backdrop-blur-xl border-white/20">
+                    <DropdownMenuContent className="max-h-64 overflow-y-auto p-3 rounded-lg">
                       <ScrollArea className="h-48 w-64">
                         {EMOJI_CATEGORIES.map(cat => (
                           <div key={cat.name} className="mb-3">
-                            <div className="text-xs text-slate-400 mb-1.5 font-sans uppercase tracking-wide">{cat.name}</div>
+                            <div className="text-xs text-slate-400 mb-1.5 uppercase tracking-wide">{cat.name}</div>
                             <div className="flex flex-wrap gap-1.5">
                               {cat.emojis.map(emoji => (
                                 <button
                                   key={emoji}
                                   type="button"
-                                  className="w-9 h-9 text-xl rounded-xl flex items-center justify-center hover:bg-electric-500/20 focus:bg-electric-500/30 focus:outline-none transition-colors"
+                                  className="w-9 h-9 text-xl rounded-lg flex items-center justify-center hover:bg-electric-50 focus:bg-electric-100 focus:outline-none transition-colors"
                                   onClick={() => setCreateForm(f => ({ ...f, avatar: emoji }))}
                                   aria-label={`Pick emoji ${emoji}`}
                                 >
@@ -2285,60 +2029,51 @@ export default function FocusFlow() {
               </div>
 
               {/* Type Picker */}
-              <div className="mb-6">
-                <Label className="block mb-3 font-sans font-semibold text-white">Profile Type</Label>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="mb-5">
+                <Label className="block mb-2 text-sm font-medium text-slate-900">Profile type</Label>
+                <div className="grid grid-cols-2 gap-2">
                   {PROFILE_TYPES.map(type => (
-                    <motion.button
+                    <button
                       key={type.key}
                       type="button"
                       className={cn(
-                        "relative flex flex-col items-start px-4 py-4 rounded-2xl border-2 transition-all duration-300 overflow-hidden group",
+                        "relative flex flex-col items-start px-3.5 py-3 rounded-lg border text-left transition-colors",
                         createForm.type === type.key
-                          ? "border-electric-500 bg-electric-500/20 shadow-lg shadow-electric-500/30"
-                          : "border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30"
+                          ? "border-electric-500 bg-electric-50 ring-1 ring-electric-500"
+                          : "border-slate-200 hover:border-slate-300 bg-white"
                       )}
                       onClick={() => setCreateForm(f => ({ ...f, type: type.key as ProfileType }))}
                       aria-label={`Select ${type.label} profile`}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
                     >
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-2xl">{type.emoji}</span>
-                        <span className="font-display font-bold text-white text-base">{type.label}</span>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-lg">{type.emoji}</span>
+                        <span className="font-medium text-slate-900 text-sm">{type.label}</span>
                       </div>
-                      <span className="text-xs text-slate-300 font-sans">{type.desc}</span>
+                      <span className="text-xs text-slate-500">{type.desc}</span>
                       {createForm.type === type.key && (
-                        <motion.div
-                          className="absolute top-2 right-2"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        >
-                          <span className="text-electric-400 text-lg">✓</span>
-                        </motion.div>
+                        <Check className="absolute top-2.5 right-2.5 w-4 h-4 text-electric-600" />
                       )}
-                    </motion.button>
+                    </button>
                   ))}
                 </div>
               </div>
 
-              <DialogFooter className="mt-8 flex flex-row justify-end gap-3">
+              <DialogFooter className="mt-6 flex flex-row justify-end gap-2">
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => setShowCreateModal(false)}
-                  className="rounded-xl px-6 py-2 text-white hover:bg-white/10 font-sans"
+                  className="rounded-lg px-4 text-slate-600 hover:text-slate-900"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-gradient-to-r from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white rounded-xl px-8 py-2 font-sans font-semibold shadow-lg shadow-electric-500/30"
+                  className="bg-electric-600 hover:bg-electric-700 text-white rounded-lg px-6 font-medium"
                   disabled={!createForm.name.trim() || createForm.name.length > 20}
                   aria-disabled={!createForm.name.trim() || createForm.name.length > 20}
                 >
-                  Create Profile
+                  Create profile
                 </Button>
               </DialogFooter>
             </form>
@@ -2347,31 +2082,26 @@ export default function FocusFlow() {
 
         {/* Add/Edit Activity Modal */}
         <Dialog open={showActivityModal} onOpenChange={setShowActivityModal}>
-          <DialogContent className="max-w-lg w-full rounded-3xl p-0 overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900">
-            <div className="absolute inset-0 bg-mesh-gradient opacity-20 pointer-events-none" />
-            <DialogHeader className="relative px-6 py-5 border-b border-white/10">
-              <DialogTitle className="text-3xl font-display font-bold bg-gradient-to-r from-white to-electric-200 bg-clip-text text-transparent">
-                {activityEditId ? "Edit Activity" : "Add Activity"}
+          <DialogContent className="max-w-lg w-full rounded-xl p-0 overflow-hidden bg-white border border-slate-200 shadow-xl">
+            <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
+              <DialogTitle className="text-lg font-display font-semibold text-slate-900">
+                {activityEditId ? "Edit activity" : "Add activity"}
               </DialogTitle>
-              <DialogDescription className="text-slate-300 font-sans mt-1">
+              <DialogDescription className="text-slate-500 text-sm">
                 {activityEditId
                   ? "Update your activity details"
-                  : "Add a new custom activity to your day"}
+                  : "Add a new activity to your day"}
               </DialogDescription>
             </DialogHeader>
             <form
               onSubmit={handleSaveActivity}
-              className="relative px-6 py-5 space-y-5"
+              className="px-6 py-5 space-y-5"
               autoComplete="off"
             >
               {/* Name */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <Label htmlFor="activity-name" className="block mb-2 font-sans font-medium text-white">
-                  Activity Name <span className="text-coral-400">*</span>
+              <div>
+                <Label htmlFor="activity-name" className="block mb-1.5 text-sm font-medium text-slate-900">
+                  Activity name <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="activity-name"
@@ -2381,21 +2111,16 @@ export default function FocusFlow() {
                   value={activityForm?.name || ""}
                   onChange={e => setActivityForm((f: any) => ({ ...f, name: e.target.value.slice(0, 50) }))}
                   placeholder="e.g. Yoga, Deep Work, Family Time"
-                  className="w-full bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-electric-400 rounded-xl px-4 py-3 font-sans backdrop-blur-xl"
+                  className="w-full rounded-lg border-slate-300 focus-visible:ring-electric-500"
                   aria-required="true"
                   aria-label="Activity name"
                 />
-                <span className="text-xs text-slate-400 mt-1.5 block font-sans">{activityForm?.name?.length || 0}/50</span>
-              </motion.div>
+                <span className="text-xs text-slate-400 mt-1 block tabular-nums">{activityForm?.name?.length || 0}/50</span>
+              </div>
               {/* Duration and Time */}
-              <motion.div
-                className="grid grid-cols-2 gap-4"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-              >
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="activity-duration" className="block mb-2 font-sans font-medium text-white">
+                  <Label htmlFor="activity-duration" className="block mb-1.5 text-sm font-medium text-slate-900">
                     Duration (minutes)
                   </Label>
                   <Input
@@ -2408,34 +2133,30 @@ export default function FocusFlow() {
                     required
                     value={activityForm?.duration || 15}
                     onChange={e => setActivityForm((f: any) => ({ ...f, duration: Math.max(15, Math.min(480, Number(e.target.value))) }))}
-                    className="w-full bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-electric-400 rounded-xl px-4 py-3 font-display font-bold backdrop-blur-xl"
+                    className="w-full rounded-lg border-slate-300 focus-visible:ring-electric-500 tabular-nums"
                     aria-required="true"
                     aria-label="Activity duration"
                   />
-                  <span className="text-xs text-slate-400 mt-1.5 block font-sans">15 min to 8 hours</span>
+                  <span className="text-xs text-slate-400 mt-1 block">15 min to 8 hours</span>
                 </div>
                 <div>
-                  <Label htmlFor="activity-time" className="block mb-2 font-sans font-medium text-white">
-                    Start Time
+                  <Label htmlFor="activity-time" className="block mb-1.5 text-sm font-medium text-slate-900">
+                    Start time
                   </Label>
                   <TimePickerInput
                     id="activity-time"
                     name="activity-time"
                     value={activityForm?.startTime}
                     onChange={(time) => setActivityForm((f: any) => ({ ...f, startTime: time }))}
-                    className="w-full bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:bg-white/15 focus:border-electric-400 rounded-xl px-4 py-3 font-display font-bold backdrop-blur-xl"
+                    className="w-full rounded-lg border-slate-300 focus-visible:ring-electric-500"
                     aria-label="Activity start time"
                   />
-                  <span className="text-xs text-slate-400 mt-1.5 block font-sans">Optional</span>
+                  <span className="text-xs text-slate-400 mt-1 block">Optional</span>
                 </div>
-              </motion.div>
+              </div>
               {/* Category */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <Label htmlFor="activity-category" className="block mb-2 font-sans font-medium text-white">
+              <div>
+                <Label htmlFor="activity-category" className="block mb-1.5 text-sm font-medium text-slate-900">
                   Category
                 </Label>
                 <select
@@ -2444,85 +2165,74 @@ export default function FocusFlow() {
                   required
                   value={activityForm?.category || ""}
                   onChange={e => setActivityForm((f: any) => ({ ...f, category: e.target.value }))}
-                  className="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 font-sans backdrop-blur-xl focus:bg-white/15 focus:border-electric-400 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-electric-500"
                   aria-required="true"
                   aria-label="Activity category"
                 >
-                  <option value="" disabled className="bg-slate-800 text-slate-400">
+                  <option value="" disabled>
                     Select category
                   </option>
                   {ACTIVITY_CATEGORIES.map(cat => (
-                    <option key={cat} value={cat} className="bg-slate-800 text-white">
+                    <option key={cat} value={cat}>
                       {cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </option>
                   ))}
                 </select>
-              </motion.div>
+              </div>
               {/* Color Picker */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-              >
-                <Label className="block mb-3 font-sans font-medium text-white">Color</Label>
-                <div className="flex flex-row items-center gap-3 flex-wrap">
+              <div>
+                <Label className="block mb-2 text-sm font-medium text-slate-900">Color</Label>
+                <div className="flex flex-row items-center gap-2.5 flex-wrap">
                   {ACTIVITY_COLORS.map(color => (
-                    <motion.button
+                    <button
                       key={color}
                       type="button"
                       className={cn(
-                        "w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-200",
+                        "w-8 h-8 rounded-full flex items-center justify-center transition-transform",
                         activityForm?.color === color
-                          ? "border-electric-400 ring-4 ring-electric-400/30 scale-110"
-                          : "border-white/30 hover:border-white/20 hover:scale-105"
+                          ? "ring-2 ring-offset-2 ring-slate-400 scale-110"
+                          : "hover:scale-105"
                       )}
                       style={{ background: color }}
                       onClick={() => setActivityForm((f: any) => ({ ...f, color }))}
                       aria-label={`Pick color ${color}`}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
                     >
                       {activityForm?.color === color && (
-                        <span className="text-white text-lg font-bold">✓</span>
+                        <Check className="w-4 h-4 text-white" strokeWidth={3} />
                       )}
-                    </motion.button>
+                    </button>
                   ))}
                 </div>
-              </motion.div>
+              </div>
               {/* Emoji Picker */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <Label className="block mb-3 font-sans font-medium text-white">Emoji Icon</Label>
+              <div>
+                <Label className="block mb-2 text-sm font-medium text-slate-900">Icon</Label>
                 <div className="flex flex-row items-center gap-3">
-                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-3xl backdrop-blur-xl">
+                  <div className="w-11 h-11 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-2xl">
                     {activityForm?.icon}
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         type="button"
-                        className="px-5 py-2.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-sans font-medium backdrop-blur-xl transition-all duration-200"
+                        variant="outline"
+                        className="rounded-lg border-slate-300 text-slate-700 text-sm"
                         aria-label="Pick emoji"
                       >
-                        Pick Emoji
+                        Choose emoji
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="max-h-72 overflow-y-auto p-3 bg-slate-900/95 backdrop-blur-xl border-white/20 rounded-2xl">
+                    <DropdownMenuContent className="max-h-72 overflow-y-auto p-3 rounded-lg">
                       <ScrollArea className="h-56 w-72">
                         {EMOJI_CATEGORIES.map(cat => (
                           <div key={cat.name} className="mb-3">
-                            <div className="text-xs text-slate-400 mb-2 font-sans font-medium uppercase tracking-wider">{cat.name}</div>
+                            <div className="text-xs text-slate-400 mb-2 font-medium uppercase tracking-wider">{cat.name}</div>
                             <div className="flex flex-wrap gap-1.5">
                               {cat.emojis.map(emoji => (
                                 <button
                                   key={emoji}
                                   type="button"
-                                  className={cn(
-                                    "w-10 h-10 text-xl rounded-xl flex items-center justify-center transition-all duration-200 hover:bg-electric-500/20 focus:bg-electric-500/30 focus:outline-none"
-                                  )}
+                                  className="w-10 h-10 text-xl rounded-lg flex items-center justify-center transition-colors hover:bg-electric-50 focus:bg-electric-100 focus:outline-none"
                                   onClick={() => setActivityForm((f: any) => ({ ...f, icon: emoji }))}
                                   aria-label={`Pick emoji ${emoji}`}
                                 >
@@ -2536,23 +2246,23 @@ export default function FocusFlow() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </motion.div>
-              <DialogFooter className="mt-8 flex flex-row justify-end gap-3 pt-5 border-t border-white/10">
+              </div>
+              <DialogFooter className="flex flex-row justify-end gap-2 pt-4 border-t border-slate-100">
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => setShowActivityModal(false)}
-                  className="rounded-xl px-6 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 font-sans font-medium"
+                  className="rounded-lg px-4 text-slate-600 hover:text-slate-900"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-gradient-to-r from-electric-500 to-electric-600 hover:from-electric-600 hover:to-electric-700 text-white rounded-xl px-8 py-2.5 font-sans font-bold shadow-lg shadow-electric-500/30 border-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-electric-600 hover:bg-electric-700 text-white rounded-lg px-6 font-medium disabled:opacity-50"
                   disabled={!activityForm?.name?.trim() || activityForm?.name?.length > 50}
                   aria-disabled={!activityForm?.name?.trim() || activityForm?.name?.length > 50}
                 >
-                  {activityEditId ? "Save Changes" : "Add Activity"}
+                  {activityEditId ? "Save changes" : "Add activity"}
                 </Button>
               </DialogFooter>
             </form>
@@ -2561,41 +2271,35 @@ export default function FocusFlow() {
 
         {/* Delete Activity Confirmation */}
         <Dialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
-          <DialogContent className="max-w-sm w-full rounded-2xl p-0 overflow-hidden">
-            <DialogHeader className="bg-red-100 px-6 py-4">
-              <DialogTitle className="text-xl font-bold text-red-600">
-                Delete Activity
+          <DialogContent className="max-w-sm w-full rounded-xl p-0 overflow-hidden bg-white border border-slate-200 shadow-xl">
+            <DialogHeader className="px-6 pt-6 pb-3">
+              <DialogTitle className="text-lg font-display font-semibold text-slate-900">
+                Delete activity
               </DialogTitle>
-              <DialogDescription className="text-slate-600">
+              <DialogDescription className="text-slate-500 text-sm">
                 Are you sure you want to delete this activity? This cannot be undone.
               </DialogDescription>
             </DialogHeader>
-            <div className="px-6 py-4 flex flex-row justify-end space-x-2">
+            <div className="px-6 pb-6 pt-2 flex flex-row justify-end gap-2">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setDeleteConfirmId(null)}
-                className="rounded-lg"
+                className="rounded-lg text-slate-600 hover:text-slate-900"
               >
                 Cancel
               </Button>
               <Button
                 type="button"
-                className="bg-red-600 text-white rounded-lg px-6"
+                className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-5"
                 onClick={() => handleDeleteActivity(deleteConfirmId!)}
               >
+                <Trash2 className="w-4 h-4 mr-1.5" />
                 Delete
               </Button>
             </div>
           </DialogContent>
         </Dialog>
-
-        {/* Footer */}
-        <footer className="w-full text-center text-xs text-slate-400 py-4 mt-auto">
-          <span>
-            &copy; {new Date().getFullYear()} FocusFlow. Made with <span aria-label="love">💙</span>
-          </span>
-        </footer>
       </div>
     </>
   );

@@ -1,9 +1,10 @@
 import type { AppProps } from 'next/app'
 import '../styles/globals.css';
 import { Toaster } from "@/components/ui/toaster"
+import { SessionProvider } from "next-auth/react";
 import { useEffect, useState } from 'react';
 
-export default function App({ Component, pageProps }: AppProps) {
+export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -25,9 +26,11 @@ export default function App({ Component, pageProps }: AppProps) {
   }
 
   return (
-    <div className="min-h-screen">
-      <Component {...pageProps} />
-      <Toaster />
-    </div>
+    <SessionProvider session={session}>
+      <div className="min-h-screen">
+        <Component {...pageProps} />
+        <Toaster />
+      </div>
+    </SessionProvider>
   )
 }
