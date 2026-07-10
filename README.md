@@ -1,58 +1,62 @@
-# FocusFlow - Beat the Scroll, Build Focus 🎯
+# FocusFlow
 
-FocusFlow is a playful, minimalist productivity app designed to help you maintain focus and track your daily activities effectively. Whether you're a student, professional, entrepreneur, creative, or busy parent, FocusFlow adapts to your lifestyle and helps you stay on track.
+**Track habits. Build streaks. Stay focused.**
 
-## Features ✨
+FocusFlow is a fast, clean habit tracker that works instantly in your browser — no
+signup required. Plan your day, check off activities, and watch streaks compound.
+Sign in with OAuth to sync progress across devices, and manage habit-builder
+customers from the built-in admin dashboard.
 
-- **Multiple Profile Support**: Create and switch between different profiles tailored to your various roles
-- **Customizable Activities**: Add, edit, and organize your daily activities with drag-and-drop functionality
-- **Progress Tracking**: Visual progress indicators and completion rates for your daily goals
-- **Streak System**: Stay motivated with a streak counter for consistent productivity
-- **Analytics**: Track your productivity patterns and achievements (Coming Soon)
-- **Share Progress**: Share your daily achievements with others
-- **Responsive Design**: Beautiful, modern UI that works across devices
+## Features
 
-## Getting Started 🚀
+### For individuals
+- **One-screen days** — plan activities, check them off, watch the progress ring fill
+- **Streak system** — hit your daily goal to extend the streak; track current, best, and perfect days
+- **Multiple profiles** — separate routines for student, professional, founder, creative, and parent roles
+- **Analytics** — completion trends, category performance, time-of-day heatmaps, streak history
+- **Cloud sync with localStorage fallback** — works offline and signed-out; OAuth sign-in (Google/GitHub) syncs progress to MongoDB across devices
+- **Desktop-optimized** — full app-shell layout on large screens, responsive down to mobile
 
-### Prerequisites
+### For coaches & teams (admin dashboard at `/admin`)
+- **Account management** — list, deactivate/reactivate, and delete accounts
+- **Customer onboarding** — pre-provision habit-builder customers by email with localized defaults
+- **Localization** — per-deployment locale, currency, timezone, week start, and customizable tracking-metric labels/units
+- **Engagement analytics** — daily active users, completion averages, streak leaderboards, top activity categories
 
-- Node.js (14.x or higher)
-- pnpm (recommended) or npm
+## Quick start
 
-### Installation
+```bash
+npm install
+npm run dev
+```
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/FocusFlow.git
-   cd FocusFlow
-   ```
+Open [http://localhost:3000](http://localhost:3000). That's it — with no environment
+variables the app runs in localStorage-only mode.
 
-2. Install dependencies:
-   ```bash
-   pnpm install
-   # or
-   npm install
-   ```
+To enable OAuth, cloud sync, and the admin dashboard, copy `.env.example` to
+`.env.local` and fill in MongoDB Atlas + OAuth credentials. See
+**[DEPLOYMENT.md](./DEPLOYMENT.md)** for the full walkthrough.
 
-3. Run the development server:
-   ```bash
-   pnpm dev
-   # or
-   npm run dev
-   ```
+## Deployment
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+The repo is pre-configured for **Render's free tier** (see [`render.yaml`](./render.yaml))
+with **MongoDB Atlas free tier (M0)** for storage. Full instructions, including OAuth
+credential setup: **[DEPLOYMENT.md](./DEPLOYMENT.md)**.
 
-## Tech Stack 💻
+## Tech stack
 
-- [Next.js](https://nextjs.org/) - React framework for production
-- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
-- [Framer Motion](https://www.framer.com/motion/) - Animation library
-- [Shadcn/ui](https://ui.shadcn.com/) - UI components
+- [Next.js 14](https://nextjs.org/) (pages router) + TypeScript
+- [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) + [Lucide icons](https://lucide.dev/)
+- [NextAuth.js](https://next-auth.js.org/) — Google & GitHub OAuth (both optional)
+- [MongoDB](https://www.mongodb.com/) — progress sync, accounts, org settings, analytics events
+- [Framer Motion](https://www.framer.com/motion/) + [Recharts](https://recharts.org/)
 
-## Contributing 🤝
+## Marketing
 
-Contributions are welcome! Feel free to:
+B2B/B2C positioning and launch copy for Twitter/X and LinkedIn live in
+**[MARKETING.md](./MARKETING.md)**.
+
+## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -60,16 +64,6 @@ Contributions are welcome! Feel free to:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## License 📝
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments 🙏
-
-- Emoji icons provided by various sources
-- Inspiration from productivity and time management techniques
-- Community feedback and contributions
-
----
-
-Built with ❤️ for better productivity
